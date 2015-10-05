@@ -10,14 +10,18 @@ class Server
     loop{
       Thread.start(@server.accept) do |client|
         client.puts(Time.now.ctime)
-         nick_name = client.gets.chomp.to_s
-         puts nick_name.is_a?(String)
-         puts nick_name
-         if nick_name == "Connected"
-           puts "Foo"
-           client.puts "Welcome #{nick_name}"
-         end
+        #  nick_name = client.gets.chomp.to_s
+        #  puts nick_name.is_a?(String)
+        #  puts nick_name
+        #  if nick_name == "Connected"
+        #    puts "Foo"
+        #    client.puts "Welcome #{nick_name}"
+        #  end
         #  @connections.add(client)
+        case client.gets.chomp.to_s
+        when "KILL_SERVICE"
+            client.puts "Service Terminated"
+        end
       end
     }
   end
