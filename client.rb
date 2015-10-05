@@ -5,6 +5,10 @@
 #     @server = server
 #     @request = nil
 #     @response = nil
+#     listen
+#     send
+#     @request.join
+#     @response.join
 #   end
 #
 #   def send
@@ -35,7 +39,18 @@ require "socket"
 hostname = 'localhost'
 port = 2000
 
+def sendMessage (server)
+  loop {
+    puts "Send Message: "
+    server.puts $stdin.gets.chomp
+  }
+end
+
 s = TCPSocket.open(hostname, port)
+
+s.puts "Connected"
+
+# sendMessage(s)
 
 while line = s.gets
   puts line.chomp

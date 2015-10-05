@@ -2,7 +2,7 @@
 #
 # class Server
 #   def initialize(port,ip)
-#     @server = TCPServer.open(port)
+#     @server = TCPServer.open(ip,port)
 #     @connections = {}
 #     @rooms = {}
 #     @clients = {}
@@ -25,18 +25,9 @@
 #     }
 #   end
 # end
-# server = Server.new("192.168.92.53", 3000)
+#
+# server = Server.new(3000,'localhost')
 # server.run()
-
-# require "socket"
-#
-# socket = TCPSocket.new('localhost',3000)
-# client = socket.accept
-#
-# puts "New client! #{client}"
-#
-# client.write("Hello from server")
-# client.close
 
 require "socket"
 
@@ -44,7 +35,16 @@ server = TCPServer.open(2000)
 loop {
   Thread.start(server.accept) do |client|
     client.puts(Time.now.ctime)
-    client.puts "Closing the connection."
-    client.close
+     nick_name = client.gets.chomp.to_s
+     puts nick_name.is_a?(String)
+     puts nick_name
+     if nick_name == "Connected"
+       puts "Foo"
+     end
   end
 }
+
+def endSession(client)
+  client.puts "Closing the connection."
+  client.close
+end
