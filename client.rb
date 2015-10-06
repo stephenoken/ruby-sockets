@@ -14,7 +14,8 @@ class Client
   def listen
     @response =Thread.new do
       loop {
-        puts @server.gets.chomp
+        res = "Server: #{@server.gets.chomp.to_s}"
+        puts res
       }
     end
   end
@@ -29,5 +30,5 @@ class Client
   end
 end
 
-server = TCPSocket.open("localhost",2000)
+server = TCPSocket.open("localhost",ARGV[0]||2000)
 Client.new(server)
