@@ -5,13 +5,18 @@ class Server
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-    @connections = {}
+    @connections = []
   end
 
   def run
     puts "Server running on port: #{@port}"
     loop{
       Thread.start(@server.accept) do |client|
+        if @connections.length >= 1
+          client.puts "Service is busy try again later"
+          kill_service(client)
+        end
+        @connections.push(client)
         client.puts(Time.now.ctime)
         client_connection(client)
       end

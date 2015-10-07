@@ -16,10 +16,9 @@ class Client
       loop {
         res = "Server: #{@server.gets.chomp.to_s}"
         puts res
-        if res == "Goodbye..."
-          @server.close
-          @response.kill self
-          @request.kill self
+        if res.include? "Goodbye"
+          puts "Toodles"
+          abort
         end
       }
     end
