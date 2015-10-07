@@ -1,4 +1,6 @@
 require "socket"
+require "thread/pool"
+
 
 class Server
   def initialize(ip,port)
@@ -6,19 +8,17 @@ class Server
     @port = port
     @server = TCPServer.open(@ip,@port)
     @connections = []
+    @pool = Thread.pool(1) # By defualt pooling is set 1 for testing purposes
   end
 
   def run
     puts "Server running on port: #{@port}"
     loop{
       Thread.start(@server.accept) do |client|
-        if @connections.length >= 1
-          client.puts "Service is busy try again later"
-          kill_service(client)
-        end
-        @connections.push(client)
-        client.puts(Time.now.ctime)
-        client_connection(client)
+        @pool.process{
+          client.puts(Time.now.ctime)
+          client_connection(client)
+        }
       end
     }
   end
