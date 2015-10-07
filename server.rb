@@ -7,8 +7,7 @@ class Server
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-    @connections = []
-    @pool = Thread.pool(1) # By defualt pooling is set 1 for testing purposes
+    @pool = Thread.pool(2) # By defualt pooling is set 1 for testing purposes
   end
 
   def run
@@ -16,7 +15,7 @@ class Server
     loop{
       Thread.start(@server.accept) do |client|
         @pool.process{
-          client.puts(Time.now.ctime)
+          client.puts("Welcome\n#{Time.now.ctime}")
           client_connection(client)
         }
       end
@@ -38,6 +37,7 @@ class Server
       end
     }
   end
+
   def kill_service(client)
     client.puts "Goodbye..."
     client.close
