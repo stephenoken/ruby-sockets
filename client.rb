@@ -3,12 +3,12 @@ require "socket"
 class Client
   def initialize(server)
     @server = server
-    @response = nil
     @request = nil
-    send
+    @response = nil
     listen
-    @response.join
+    send
     @request.join
+    @response.join
   end
 
   def listen
@@ -16,13 +16,18 @@ class Client
       loop {
         res = "Server: #{@server.gets.chomp.to_s}"
         puts res
+        if res == "Goodbye..."
+          @server.close
+          @response.kill self
+          @request.kill self
+        end
       }
     end
   end
 
   def send
-    puts "Enter Command"
-    @response = Thread.new do
+    # puts "Enter Command"
+    @request = Thread.new do
       loop {
          @server.puts($stdin.gets.chomp)
       }
