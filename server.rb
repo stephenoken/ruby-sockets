@@ -8,12 +8,14 @@ class Server
     @port = port
     @server = TCPServer.open(@ip,@port)
     @pool = Thread.pool(2) # By set the number of connections that are accepted
+    @connections = Array.new
   end
 
   def run
     puts "Server running on port: #{@port}"
     loop{
       Thread.start(@server.accept) do |client|
+        @connections.push(client)
         @pool.process{
           client.puts("Welcome\n#{Time.now.ctime}")
           client_connection(client)
@@ -38,8 +40,7 @@ class Server
   end
 
   def kill_service(client)
-    client.puts "Goodbye..."
-    client.close
+    @connections.each { |c| c.puts "Goodbye..."}
     @server.close
   end
 
