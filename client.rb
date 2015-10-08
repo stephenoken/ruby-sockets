@@ -17,7 +17,6 @@ class Client
         res = "Server: #{@server.gets.chomp.to_s}"
         puts res
         if res.include? "Goodbye"
-          puts "Toodles"
           abort
         end
       }

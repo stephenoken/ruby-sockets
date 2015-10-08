@@ -7,7 +7,7 @@ class Server
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-    @pool = Thread.pool(2) # By defualt pooling is set 1 for testing purposes
+    @pool = Thread.pool(2) # By set the number of connections that are accepted
   end
 
   def run
@@ -21,7 +21,6 @@ class Server
       end
     }
   end
-# Add a new method that listens for client input
 
   def client_connection(client)
     loop{
@@ -41,6 +40,7 @@ class Server
   def kill_service(client)
     client.puts "Goodbye..."
     client.close
+    @server.close
   end
 
   def hello_message(client, input)
