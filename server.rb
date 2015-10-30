@@ -12,7 +12,7 @@ class Server
   end
 
   def run
-    puts "Server running on port: #{@port}"
+    puts "Server running on : #{@ip}:#{@port}"
     loop{
       Thread.start(@server.accept) do |client|
         @connections.push(client)
@@ -27,6 +27,7 @@ class Server
   def client_connection(client)
     loop{
       clientInput = client.gets.chomp.to_s
+      puts clientInput
       command = "#{clientInput.partition(" ").first}"
       case command
       when "KILL_SERVICE"
@@ -49,5 +50,5 @@ class Server
   end
 end
 
-server = Server.new('localhost',ARGV[0]||2000)
+server = Server.new(ARGV[0]||'localhost',ARGV[1]||2000)
 server.run()
