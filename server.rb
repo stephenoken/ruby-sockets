@@ -1,5 +1,5 @@
 require "socket"
-require "thread/pool"
+# require "thread/pool"
 
 
 class Server
@@ -7,7 +7,7 @@ class Server
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-    @pool = Thread.pool(2) # By set the number of connections that are accepted
+    # @pool = Thread.pool(2) # By set the number of connections that are accepted
     @connections = Array.new
   end
 
