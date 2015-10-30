@@ -49,5 +49,5 @@ class Server
   end
 end
 
-server = Server.new('localhost',ARGV[0]||2000)
+server = Server.new(ARGV[1]||'localhost',ARGV[0]||2000)
 server.run()
