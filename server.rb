@@ -17,7 +17,7 @@ class Server
       Thread.start(@server.accept) do |client|
         @connections.push(client)
         # @pool.process{
-          client.puts("Welcome\n#{Time.now.ctime}")
+          # client.puts("Welcome\n#{Time.now.ctime}")
           client_connection(client)
         # }
       end
