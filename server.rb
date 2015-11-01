@@ -9,6 +9,7 @@ class Server
     @server = TCPServer.open(@ip,@port)
     @pool = Thread.pool(2) # By set the number of connections that are accepted
     @connections = Array.new
+    @studentID = ARGV[2]
   end
 
   def run
@@ -46,7 +47,7 @@ class Server
   end
 
   def hello_message(client, input)
-    client.puts "#{input}\nIP:[#{@ip}]\nPORT:[#{@port}]"
+    client.puts "#{input}\nIP:#{@ip}\nPORT:#{@port}\nStudentID:#{@studentID}"
   end
 end
 
