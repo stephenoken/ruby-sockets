@@ -10,7 +10,7 @@ class Server
     # @pool = Thread.pool(2) # By set the number of connections that are accepted
     @connections = Array.new
     @studentID = ARGV[2]
-    @chatroom = Chatroom.new("room1")
+    @chatrooms = Array.new
   end
 
   def run
@@ -26,17 +26,20 @@ class Server
   end
 
   def client_connection(client)
-    @chatroom.joinChatroom(client)
-    client.puts "JOINED_CHATROOM:#{@chatroom.name}"
     loop{
       clientInput = client.gets.chomp.to_s
       puts clientInput
-      command = "#{clientInput.partition(" ").first}"
+      arguments = clientInput.partition(" ")
+      command = "#{arguments.first}"
       case command
       when "KILL_SERVICE"
         kill_service(client)
       when "HELO"
         hello_message(client, clientInput)
+      when "JOIN_CHATROOM"
+        puts "#{arguments.last}"
+        @chatrooms.push(Chatroom.new(arguments.last))
+        client.puts "JOINED_CHATROOM:#{@chatrooms[0].name}\nSERVER_IP:#{@ip}\nPORT:#{@port}"
       else
         client.puts "Invalid Command"
       end
@@ -50,6 +53,10 @@ class Server
 
   def hello_message(client, input)
     client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
+  end
+
+  def chatroom_response(client, chatroom)
+    client.puts "JOINED_CHATROOM:#{chatroom.name}\nSERVER_IP:#{@ip}\nPort:#{@port}"
   end
 end
 
