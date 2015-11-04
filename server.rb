@@ -10,7 +10,7 @@ class Server
     # @pool = Thread.pool(2) # By set the number of connections that are accepted
     @connections = Array.new
     @studentID = ARGV[2]
-    @chatroom = Chatroom.new("General Chatroom")
+    @chatroom = Chatroom.new("room1")
   end
 
   def run
