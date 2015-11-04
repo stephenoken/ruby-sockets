@@ -1,15 +1,16 @@
 require "socket"
 require_relative "./../bin/pool.rb"
-
+require "./chatroom.rb"
 
 class Server
   def initialize(ip,port)
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-  	 @pool = Thread.pool(2) # By set the number of connections that are accepted
+  	@pool = Thread.pool(2) # By set the number of connections that are accepted
     @connections = Array.new
     @studentID = ARGV[2]
+    @chatroom = Chatroom.new("General Chatroom")
   end
 
   def run
@@ -19,12 +20,14 @@ class Server
         @connections.push(client)
         @pool.process{
           client_connection(client)
-        }
+         }
       end
     }
   end
 
   def client_connection(client)
+    @chatroom.joinChatroom(client)
+    client.puts "JOINED_CHATROOM:#{@chatroom.name}"
     loop{
       clientInput = client.gets.chomp.to_s
       puts clientInput
