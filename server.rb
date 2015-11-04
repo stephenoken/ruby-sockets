@@ -42,7 +42,7 @@ class Server
   end
 
   def kill_service(client)
-    @connections.each { |c| c.puts "Goodbye..."}
+    @connections.each { |c| c.close}
     @server.close
   end
 
