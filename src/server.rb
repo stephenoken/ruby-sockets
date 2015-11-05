@@ -26,6 +26,7 @@ class Server
   end
 
   def client_connection(client)
+    client.puts "JOINED_CHATROOM:room1\nSERVER_IP:#{@ip}\nPORT:#{@port}"
     loop{
       clientInput = client.gets.chomp.to_s
       puts clientInput
