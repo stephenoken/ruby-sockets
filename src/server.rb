@@ -1,5 +1,5 @@
 require "socket"
-require "thread/pool"
+require_relative "./../bin/pool.rb"
 
 
 class Server
