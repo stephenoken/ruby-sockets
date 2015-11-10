@@ -36,7 +36,7 @@ class Server
       when "HELO"
         hello_message(client, clientInput)
       else
-        client.puts "Invalid Command"
+        # client.puts "Invalid Command"
       end
     }
   end
