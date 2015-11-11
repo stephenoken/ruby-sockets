@@ -1,6 +1,5 @@
 require "socket"
 require_relative "./../bin/pool.rb"
-require "./chatroom.rb"
 
 class Server
   def initialize(ip,port)
@@ -39,8 +38,8 @@ class Server
         hello_message(client, clientInput)
       when "JOIN_CHATROOM"
         puts "#{arguments.last}"
-        @chatrooms.push(Chatroom.new(arguments.last))
-        client.puts "JOINED_CHATROOM:#{@chatrooms[0].name}\nSERVER_IP:#{@ip}\nPORT:#{@port}"
+        #@chatrooms.push(Chatroom.new(arguments.last))
+        #client.puts "JOINED_CHATROOM:#{@chatrooms[0].name}\nSERVER_IP:#{@ip}\nPORT:#{@port}"
       else
         # client.puts "Invalid Command"
       end
