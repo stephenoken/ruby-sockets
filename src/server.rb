@@ -42,6 +42,7 @@ class Server
 
   def kill_service(client)
 		Thread.kill self
+		abort
     #@connections.each { |c| c.close}
     #@server.close
   end
