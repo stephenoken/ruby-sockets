@@ -41,8 +41,9 @@ class Server
   end
 
   def kill_service(client)
-    @connections.each { |c| c.close}
-    @server.close
+		Thread.kill self
+    #@connections.each { |c| c.close}
+    #@server.close
   end
 
   def hello_message(client, input)
