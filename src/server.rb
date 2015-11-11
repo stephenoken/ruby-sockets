@@ -25,23 +25,21 @@ class Server
   end
 
   def client_connection(client)
-    #client.puts "JOINED_CHATROOM:room1\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:1234"
     loop{
       clientInput = client.gets.chomp.to_s
       puts clientInput
-      arguments = clientInput.partition(" ")
-      command = "#{arguments.first}"
-			puts "Command :#{command}"
+			if clientInput.include? ":"
+				arguments = clientInput.partition(":")
+			else 
+				arguments = clientInput.partition(" ")
+			end
       case command
       when "KILL_SERVICE"
         kill_service(client)
       when "HELO"
         hello_message(client, clientInput)
       when "JOIN_CHATROOM"
-        #puts "#{arguments.last}"
-        #@chatrooms.push(Chatroom.new(arguments.last))
-        #client.puts "JOINED_CHATROOM:#{@chatrooms[0].name}\nSERVER_IP:#{@ip}\nPORT:#{@port}"
-				
+    client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:1234"
       else
         # client.puts "Invalid Command"
       end
