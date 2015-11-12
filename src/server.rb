@@ -15,7 +15,6 @@ class Server
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
-        puts "Hello"
       Thread.start(@server.accept) do |client|
         @connections.push(client)
         @pool.process{
