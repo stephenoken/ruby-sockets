@@ -42,6 +42,8 @@ class Server
         hello_message(client, clientInput)
       when "JOIN_CHATROOM"
     client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:1234"
+			when "CLIENT_NAME"
+
       else
         # client.puts "Invalid Command"
       end
