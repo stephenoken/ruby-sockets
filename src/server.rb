@@ -15,6 +15,7 @@ class Server
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
+        puts "Hello"
       Thread.start(@server.accept) do |client|
         @connections.push(client)
         @pool.process{
@@ -28,11 +29,13 @@ class Server
     loop{
       clientInput = client.gets.chomp.to_s
       puts clientInput
+      arguments = Array.new
 			if clientInput.include? ":"
 				arguments = clientInput.partition(":")
-			else 
+			else
 				arguments = clientInput.partition(" ")
 			end
+      command = arguments[0]
       case command
       when "KILL_SERVICE"
         kill_service(client)
