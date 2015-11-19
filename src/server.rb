@@ -52,7 +52,7 @@ class Server
 				end
 				puts chatroom.chatroom_id
 				puts @chatrooms.keys 
-				client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@p}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
+				client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
 			when "CLIENT_NAME"
 
       else
