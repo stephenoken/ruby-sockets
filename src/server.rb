@@ -1,5 +1,6 @@
 require "socket"
 require_relative "./../bin/pool.rb"
+require_relative "./chatroom.rb"
 
 class Server
   def initialize(ip,port)
@@ -9,7 +10,7 @@ class Server
   	@pool = Thread.pool(2) # By set the number of connections that are accepted
     @connections = Array.new
     @studentID = ARGV[2]
-    @chatrooms = Array.new
+    @chatrooms = Hash.new
   end
 
   def run
@@ -41,7 +42,17 @@ class Server
       when "HELO"
         hello_message(client, clientInput)
       when "JOIN_CHATROOM"
-    client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:1234"
+				chatroom = Chatroom.new(arguments[2])
+				if @chatrooms[chatroom.chatroom_id].nil?
+					puts "Chatroom does not exist"
+					@chatrooms[chatroom.chatroom_id] = chatroom 
+				else
+					puts "Chatroom exists"
+					chatroom = @chatrooms[chatroom.chatroom_id]
+				end
+				puts chatroom.chatroom_id
+				puts @chatrooms.keys 
+				client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{0}\nPORT:#{0}\nROOM_REF:#{chatroom.chatroom_id}"
 			when "CLIENT_NAME"
 
       else
