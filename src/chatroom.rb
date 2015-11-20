@@ -1,18 +1,20 @@
+require_relative "./hash.rb"
 class Chatroom
 	attr_accessor :chatroom_name, :chatroom_id
 	def initialize(name)
 		@chatroom_name = name
-		@clients = Array.new
-		@chatroom_id = join_room(@chatroom_name)
+		@clients = Hash.new
+		@chatroom_id = CustomHash.hash(@chatroom_name)
 	end
 
-	def join_room(room_name)
-		hash = 0
-		for i in 0..room_name.length - 1
-			hash = hash * 31 + room_name[i].ord
-			#Had to convert the character to an integer
+	def join_room(client)
+		if @clients[client.client_id].nil?
+			@clients[client.client_id] = client
+			puts "#{@chatroom_name}: #{client.client_name} has joined the room"
+			return client.client_id
+		else
+			puts "#{client.client_name} has already been taken"
 		end 
-		return hash.abs
-	end 
+	end
 end
 

@@ -1,6 +1,7 @@
 require "socket"
 require_relative "./../bin/pool.rb"
 require_relative "./chatroom.rb"
+require_relative "./chat_client.rb"
 
 class Server
   def initialize(ip,port)
@@ -26,7 +27,9 @@ class Server
   end
 
   def client_connection(client)
-    loop{
+    chatroom_ref = 0
+		join_id = 0
+		loop{
       clientInput = client.gets.chomp.to_s
       puts clientInput
       arguments = Array.new
@@ -44,17 +47,18 @@ class Server
       when "JOIN_CHATROOM"
 				chatroom = Chatroom.new(arguments[2])
 				if @chatrooms[chatroom.chatroom_id].nil?
-					puts "Chatroom does not exist"
 					@chatrooms[chatroom.chatroom_id] = chatroom 
 				else
-					puts "Chatroom exists"
 					chatroom = @chatrooms[chatroom.chatroom_id]
 				end
 				puts chatroom.chatroom_id
-				puts @chatrooms.keys 
 				client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
+				chatroom_ref = chatroom.chatroom_id
 			when "CLIENT_NAME"
-
+				c_client = Client.new(arguments[2])
+				puts "Client : #{c_client.client_name} #{c_client.client_id}"
+				join_id = @chatrooms[chatroom_ref].join_room(c_client)
+				client.puts "JOIN_ID:#{join_id}"
       else
         # client.puts "Invalid Command"
       end
