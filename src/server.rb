@@ -89,7 +89,7 @@ class Server
 	end
 
 	def chatroom_session(client, c_client, chatroom_ref)
-		client.puts "CHAT:#{chatroom_ref}"
+		client.puts "CHAT:#{chatroom_ref}\nCLIENT_NAME:#{c_client.client_name}"
 	end
 end
 
