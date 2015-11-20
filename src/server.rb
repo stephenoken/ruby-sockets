@@ -45,22 +45,11 @@ class Server
       when "HELO"
         hello_message(client, clientInput)
       when "JOIN_CHATROOM"
-				chatroom = Chatroom.new(arguments[2])
-				if @chatrooms[chatroom.chatroom_id].nil?
-					@chatrooms[chatroom.chatroom_id] = chatroom 
-				else
-					chatroom = @chatrooms[chatroom.chatroom_id]
-				end
-				puts chatroom.chatroom_id
-				client.puts "JOINED_CHATROOM:#{arguments[2]}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
+				chatroom = chatroom_join(arguments[2],client) 
 				chatroom_ref = chatroom.chatroom_id
 			when "CLIENT_NAME"
-				c_client = Client.new(arguments[2])
-				puts "Client : #{c_client.client_name} #{c_client.client_id}"
-				join_id = @chatrooms[chatroom_ref].join_room(c_client)
-				client.puts "JOIN_ID:#{join_id}"
-				client.puts "ERROR_CODE:124"
-      else
+				register_client(arguments[2], chatroom_ref, join_id, client)
+			else
         # client.puts "Invalid Command"
       end
     }
@@ -78,6 +67,30 @@ class Server
   def chatroom_response(client, chatroom)
     client.puts "JOINED_CHATROOM:#{chatroom.name}\nSERVER_IP:#{@ip}\nPort:#{@port}"
   end
+
+	def chatroom_join(message, client)
+		chatroom = Chatroom.new(message)
+		if @chatrooms[chatroom.chatroom_id].nil?
+			@chatrooms[chatroom.chatroom_id] = chatroom 
+		else
+			chatroom = @chatrooms[chatroom.chatroom_id]
+		end
+		puts chatroom.chatroom_id
+		client.puts "JOINED_CHATROOM:#{message}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
+		return chatroom
+	end
+
+	def register_client(message, chatroom_ref, join_id, client)
+		c_client = Client.new(message)
+		puts "Client : #{c_client.client_name} #{c_client.client_id}"
+		join_id = @chatrooms[chatroom_ref].join_room(c_client)
+		client.puts "JOIN_ID:#{join_id}"
+		chatroom_session(client,c_client,chatroom_ref)
+	end
+
+	def chatroom_session(client, c_client, chatroom_ref)
+		client.puts "CHAT:#{chatroom_ref}"
+	end
 end
 
 server = Server.new(ARGV[0]||'localhost',ARGV[1]||2000)
