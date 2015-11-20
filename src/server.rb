@@ -59,6 +59,7 @@ class Server
 				puts "Client : #{c_client.client_name} #{c_client.client_id}"
 				join_id = @chatrooms[chatroom_ref].join_room(c_client)
 				client.puts "JOIN_ID:#{join_id}"
+				client.puts "ERROR_CODE:124"
       else
         # client.puts "Invalid Command"
       end
