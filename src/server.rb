@@ -27,28 +27,16 @@ class Server
   end
 
   def client_connection(client)
-    chatroom_ref = 0
-		join_id = 0
 		loop{
-      clientInput = client.gets.chomp.to_s
-      puts clientInput
-      arguments = Array.new
-			if clientInput.include? ":"
-				arguments = clientInput.partition(":")
-			else
-				arguments = clientInput.partition(" ")
-			end
+      arguments = get_client_arguments(client)
       command = arguments[0]
       case command
       when "KILL_SERVICE"
         kill_service(client)
       when "HELO"
-        hello_message(client, clientInput)
+        hello_message(client, arguments[2])
       when "JOIN_CHATROOM"
-				chatroom = chatroom_join(arguments[2],client) 
-				chatroom_ref = chatroom.chatroom_id
-			when "CLIENT_NAME"
-				register_client(arguments[2], chatroom_ref, join_id, client)
+				join_chatroom(arguments[2],client)
 			else
         # client.puts "Invalid Command"
       end
@@ -64,33 +52,49 @@ class Server
     client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
   end
 
-  def chatroom_response(client, chatroom)
-    client.puts "JOINED_CHATROOM:#{chatroom.name}\nSERVER_IP:#{@ip}\nPort:#{@port}"
-  end
-
-	def chatroom_join(message, client)
+	def join_chatroom(message, client)
 		chatroom = Chatroom.new(message)
 		if @chatrooms[chatroom.chatroom_id].nil?
-			@chatrooms[chatroom.chatroom_id] = chatroom 
+      @chatrooms[chatroom.chatroom_id] = chatroom
 		else
 			chatroom = @chatrooms[chatroom.chatroom_id]
 		end
 		puts chatroom.chatroom_id
 		client.puts "JOINED_CHATROOM:#{message}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
-		return chatroom
+
+    loop{
+      arguments = get_client_arguments(client)
+      command = arguments[0]
+      case command
+      when "CLIENT_NAME"
+        register_client(arguments[2], chatroom, client)
+      end
+    }
 	end
 
-	def register_client(message, chatroom_ref, join_id, client)
+	def register_client(message, chatroom, client)
 		c_client = Client.new(message)
 		puts "Client : #{c_client.client_name} #{c_client.client_id}"
-		join_id = @chatrooms[chatroom_ref].join_room(c_client)
+		join_id = @chatrooms[chatroom.chatroom_id].join_room(c_client) #Pass the client thread as well
 		client.puts "JOIN_ID:#{join_id}"
 		chatroom_session(client,c_client,chatroom_ref)
 	end
 
-	def chatroom_session(client, c_client, chatroom_ref)
-		client.puts "CHAT:#{chatroom_ref}\nCLIENT_NAME:#{c_client.client_name}"
+	def chatroom_session(client, c_client, chatroom)
+		client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}"
 	end
+
+  def get_client_arguments(client)
+    clientInput = client.gets.chomp.to_s
+    puts clientInput
+    arguments = Array.new
+    if clientInput.include? ":"
+      arguments = clientInput.partition(":")
+    else
+      arguments = clientInput.partition(" ")
+    end
+    return arguments
+  end
 end
 
 server = Server.new(ARGV[0]||'localhost',ARGV[1]||2000)
