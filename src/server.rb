@@ -86,7 +86,7 @@ class Server
       #puts "Chat Session: #{arguments}"
     #}
 		client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}\n"
-		client.puts "#{c_client.client_name} has joined this chatroom"
+		client.puts "MESSAGE:#{c_client.client_name} has joined this chatroom"
 	end
 
   def get_client_arguments(client)
