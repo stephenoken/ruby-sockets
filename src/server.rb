@@ -77,7 +77,7 @@ class Server
 		puts "Client : #{c_client.client_name} #{c_client.client_id}"
 		join_id = @chatrooms[chatroom.chatroom_id].join_room(c_client) #Pass the client thread as well
 		client.puts "JOIN_ID:#{join_id}"
-		chatroom_session(client,c_client,chatroom_ref)
+		chatroom_session(client,c_client,chatroom)
 	end
 
 	def chatroom_session(client, c_client, chatroom)
