@@ -81,11 +81,11 @@ class Server
 	end
 
 	def chatroom_session(client, c_client, chatroom)
-    loop {
-      arguments = get_client_arguments(client)
-      puts "Chat Session: #{arguments}"
-    }
-		client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}"
+    #loop {
+     # arguments = get_client_arguments(client)
+      #puts "Chat Session: #{arguments}"
+    #}
+		client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:Hello world"
 	end
 
   def get_client_arguments(client)
