@@ -93,6 +93,7 @@ class Server
 		 case command
 		 when "LEAVE_CHATROOM"
 			 leave_chatroom(arguments[2], client)
+       break
 		 end
     }
 
@@ -112,6 +113,7 @@ class Server
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
       when "CLIENT_NAME"
         client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
+        break
       end
     }
 	end
