@@ -59,7 +59,7 @@ class Server
 		else
 			chatroom = @chatrooms[chatroom.chatroom_id]
 		end
-		puts chatroom.chatroom_id
+		puts "Chatroom id: #{chatroom.chatroom_id}"
 		client.puts "JOINED_CHATROOM:#{message}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
 
     loop{
@@ -85,10 +85,24 @@ class Server
 		loop {
      arguments = get_client_arguments(client)
      puts "Chat Session: #{arguments}"
+		 command = arguments[0]
+		 case command
+		 when "LEAVE_CHATROOM"
+			 leave_chatroom(arguments[2], client)
+		 end
     }
 
 	end
 
+	def leave_chatroom(room_ref, client)
+		if @chatrooms.key?(room_ref)
+			puts "The room exists"
+		else
+			puts "The room does not exist"
+		end
+		# puts "Current Chatroom Clients:#{chatroom.chatroom_id}"
+		# puts "Current Chatroom Clients:#{chatroom.chatroom_id}"
+	end
   def get_client_arguments(client)
     clientInput = client.gets.chomp.to_s
     puts clientInput

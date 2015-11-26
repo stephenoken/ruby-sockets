@@ -1,6 +1,6 @@
 require_relative "./hash.rb"
 class Chatroom
-	attr_accessor :chatroom_name, :chatroom_id
+	attr_accessor :chatroom_name, :chatroom_id, :clients
 	def initialize(name)
 		@chatroom_name = name
 		@clients = Hash.new
