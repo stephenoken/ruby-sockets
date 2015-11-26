@@ -92,8 +92,9 @@ class Server
 		 command = arguments[0]
 		 case command
 		 when "LEAVE_CHATROOM"
-			 leave_chatroom(arguments[2], client)
-       break
+			 leave_chatroom(arguments[2], c_client, client)
+     when "CLIENT_NAME"
+       client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{arguments[2]}\n"
 		 end
     }
 
@@ -110,7 +111,6 @@ class Server
         @chatrooms[room_ref].clients.delete([join_id_arguments[2]])
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{join_id_arguments[2]}"
-        client.puts "CHAT:#{room_ref}\ntest"
       end
     }
 	end
