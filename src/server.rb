@@ -100,13 +100,12 @@ class Server
 	end
 
 	def leave_chatroom(room_ref, client)
+    puts "Leave Chatroom #{room_ref}"
     loop {
       join_id_arguments = get_client_arguments(client)
-      arguments = get_client_arguments(client)
       if join_id_arguments[0]=="JOIN_ID"
         puts "Leaving Chatroom..."
-        puts "Leaving Chatroom..."
-        # puts "Clients name:#{@chatrooms[room_ref].clients[join_id_arguments[2]].client_name}"
+        puts "Clients name:#{@chatrooms[room_ref].clients[join_id_arguments[2]].client_name}"
         @chatrooms[room_ref].clients.delete([join_id_arguments[2]])
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{join_id_arguments[2]}"
