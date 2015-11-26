@@ -62,14 +62,15 @@ class Server
 		puts "Chatroom id: #{chatroom.chatroom_id}"
 		client.puts "JOINED_CHATROOM:#{message}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
 
-    # loop{
+    loop{
       arguments = get_client_arguments(client)
       command = arguments[0]
       case command
       when "CLIENT_NAME"
         register_client(arguments[2], chatroom, client)
+        break
       end
-    # }
+    }
 	end
 
 	def register_client(message, chatroom, client)
@@ -82,15 +83,16 @@ class Server
 
 	def chatroom_session(client, c_client, chatroom)
 		client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
-		# loop {
+		loop {
      arguments = get_client_arguments(client)
      puts "Chat Session: #{arguments}"
 		 command = arguments[0]
 		 case command
 		 when "LEAVE_CHATROOM"
 			 leave_chatroom(arguments[2], client)
+       break
 		 end
-    # }
+    }
 
 	end
 
