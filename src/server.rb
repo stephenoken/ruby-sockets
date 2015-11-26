@@ -49,7 +49,8 @@ class Server
   end
 
   def hello_message(client, input)
-    client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
+    puts input
+    client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}\n"
   end
 
 	def join_chatroom(message, client)
@@ -98,13 +99,13 @@ class Server
 
 	def leave_chatroom(room_ref, client)
     loop {
-      arguments = get_client_arguments(client)
+      join_id_arguments = get_client_arguments(client)
       arguments = get_client_arguments(client)
       if arguments[0]=="JOIN_ID"
-        puts @chatrooms[room_ref].clients[arguments[2]].client_name
-        @chatrooms[room_ref].clients.delete([arguments[2]])
+        puts @chatrooms[room_ref].clients[join_id_arguments[2]].client_name
+        @chatrooms[room_ref].clients.delete([join_id_arguments[2]])
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
-        client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
+        client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{join_id_arguments[2]}"
       end
     }
 	end
