@@ -44,13 +44,15 @@ class Server
   end
 
   def kill_service(client)
-    @connections.each { |c| c.close}
+    # @connections.each { |c| c.close}
+    client.close
     @server.close
   end
 
   def hello_message(client, input)
     puts input
-    client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}\n"
+    client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
+    puts input
   end
 
 	def join_chatroom(message, client)
