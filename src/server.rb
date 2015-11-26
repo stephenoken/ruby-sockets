@@ -111,7 +111,7 @@ class Server
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
       when "CLIENT_NAME"
-        client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESS"
+        client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
       end
     }
 	end
