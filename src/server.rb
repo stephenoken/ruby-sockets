@@ -60,6 +60,7 @@ class Server
 		if @chatrooms[chatroom.chatroom_id].nil?
       @chatrooms[chatroom.chatroom_id] = chatroom
 		else
+      puts "Chatroom Exists"
 			chatroom = @chatrooms[chatroom.chatroom_id]
 		end
 		puts "Chatroom id: #{chatroom.chatroom_id}"
@@ -103,12 +104,11 @@ class Server
     puts "Leave Chatroom #{room_ref}"
     loop {
       arguments = get_client_arguments(client)
-      # temp_arguments = get_client_arguments(client)
       case arguments[0]
       when "JOIN_ID"
         puts "Leaving Chatroom..."
         puts "Clients name:#{@chatrooms[room_ref].clients[arguments[2]].client_name}"
-        @chatrooms[room_ref].clients.delete([arguments[2]])
+        @chatrooms[room_ref].clients.delete(arguments[2])
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
       when "CLIENT_NAME"
@@ -119,7 +119,7 @@ class Server
 	end
   def get_client_arguments(client)
     clientInput = client.gets.chomp.to_s
-    puts clientInput
+    puts "Client Input:#{clientInput}"
     arguments = Array.new
     if clientInput.include? ":"
       arguments = clientInput.partition(":")
