@@ -103,6 +103,7 @@ class Server
     puts "Leave Chatroom #{room_ref}"
     loop {
       join_id_arguments = get_client_arguments(client)
+      temp_arguments = get_client_arguments(client)
       if join_id_arguments[0]=="JOIN_ID"
         puts "Leaving Chatroom..."
         puts "Clients name:#{@chatrooms[room_ref].clients[join_id_arguments[2]].client_name}"
