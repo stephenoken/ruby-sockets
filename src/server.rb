@@ -100,7 +100,6 @@ class Server
 	end
 
 	def leave_chatroom(room_ref, client)
-    room_ref = room_ref.delete(" ")
     puts "Leave Chatroom #{room_ref}"
     loop {
       join_id_arguments = get_client_arguments(client)
@@ -122,6 +121,7 @@ class Server
     else
       arguments = clientInput.partition(" ")
     end
+    arguments[2] = arguments[2].lstrip
     return arguments
   end
 end
