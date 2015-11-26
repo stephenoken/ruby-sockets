@@ -110,7 +110,7 @@ class Server
         @chatrooms[room_ref].clients.delete([join_id_arguments[2]])
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{join_id_arguments[2]}"
-        client.puts "What's next"
+        client.puts "CHAT:sdsd"
       end
     }
 	end
