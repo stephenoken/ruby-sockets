@@ -27,6 +27,7 @@ class Server
   end
 
   def client_connection(client)
+    room_ref = ""
 		loop{
       arguments = get_client_arguments(client)
       command = arguments[0]
@@ -36,7 +37,11 @@ class Server
       when "HELO"
         hello_message(client, arguments[2])
       when "JOIN_CHATROOM"
-				join_chatroom(arguments[2],client)
+				room_ref = join_chatroom(arguments[2],client)
+      when "CLIENT_NAME"
+        register_client(arguments[2], room_ref, client)
+      when "LEAVE_CHATROOM"
+        leave_chatroom(arguments[2], client)
 			else
         # client.puts "Invalid Command"
       end
@@ -50,9 +55,7 @@ class Server
   end
 
   def hello_message(client, input)
-    puts input
     client.puts "HELO #{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
-    puts input
   end
 
 	def join_chatroom(message, client)
@@ -65,38 +68,40 @@ class Server
 		end
 		puts "Chatroom id: #{chatroom.chatroom_id}"
 		client.puts "JOINED_CHATROOM:#{message}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
-
-    loop{
-      arguments = get_client_arguments(client)
-      command = arguments[0]
-      case command
-      when "CLIENT_NAME"
-        register_client(arguments[2], chatroom, client)
-        break
-      end
-    }
+    return chatroom.chatroom_id
+    # loop{
+    #   arguments = get_client_arguments(client)
+    #   command = arguments[0]
+    #   case command
+    #   when "CLIENT_NAME"
+    #     register_client(arguments[2], chatroom, client)
+    #     break
+    #   end
+    # }
 	end
 
-	def register_client(message, chatroom, client)
+	def register_client(message, room_ref, client)
+    puts room_ref
 		c_client = Client.new(message)
 		puts "Client : #{c_client.client_name} #{c_client.client_id}"
-		join_id = @chatrooms[chatroom.chatroom_id].join_room(c_client) #Pass the client thread as well
+		join_id = @chatrooms[room_ref].join_room(c_client) #Pass the client thread as well
 		client.puts "JOIN_ID:#{join_id}"
-		chatroom_session(client,c_client,chatroom)
+    client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
+		# chatroom_session(client,c_client,chatroom)
 	end
 
 	def chatroom_session(client, c_client, chatroom)
-		client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
-		loop {
-     arguments = get_client_arguments(client)
-     puts "Chat Session: #{arguments}"
-		 command = arguments[0]
-		 case command
-		 when "LEAVE_CHATROOM"
-			 leave_chatroom(arguments[2], client)
-       break
-		 end
-    }
+		# client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
+		# loop {
+    #  arguments = get_client_arguments(client)
+    #  puts "Chat Session: #{arguments}"
+		#  command = arguments[0]
+		#  case command
+		#  when "LEAVE_CHATROOM"
+		# 	 leave_chatroom(arguments[2], client)
+    #    break
+		#  end
+    # }
 
 	end
 
@@ -106,7 +111,6 @@ class Server
       arguments = get_client_arguments(client)
       case arguments[0]
       when "JOIN_ID"
-        puts "Leaving Chatroom..."
         puts "Clients name:#{@chatrooms[room_ref].clients[arguments[2]].client_name}"
         @chatrooms[room_ref].clients.delete(arguments[2])
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
