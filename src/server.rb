@@ -95,13 +95,14 @@ class Server
 	end
 
 	def leave_chatroom(room_ref, client)
-		if @chatrooms.key?(room_ref)
-			puts "The room exists"
-		else
-			puts "The room does not exist"
-		end
-		# puts "Current Chatroom Clients:#{chatroom.chatroom_id}"
-		# puts "Current Chatroom Clients:#{chatroom.chatroom_id}"
+    arguments = get_client_arguments(client)
+    puts arguments
+    if arguments[0]=="JOIN_ID"
+      puts @chatrooms[room_ref].clients[arguments[2]].client_name
+      @chatrooms[room_ref].clients.delete([arguments[2]])
+      puts "Deleted Client:#{@chatrooms[room_ref].clients}"
+      client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
+    end
 	end
   def get_client_arguments(client)
     clientInput = client.gets.chomp.to_s
