@@ -92,7 +92,7 @@ class Server
 		 command = arguments[0]
 		 case command
 		 when "LEAVE_CHATROOM"
-			 leave_chatroom(arguments[2], c_client, client)
+			 leave_chatroom(arguments[2], client)
 		 end
     }
 
@@ -103,7 +103,7 @@ class Server
     loop {
       arguments = get_client_arguments(client)
       # temp_arguments = get_client_arguments(client)
-      case arguments[0]=="JOIN_ID"
+      case arguments[0]
       when "JOIN_ID"
         puts "Leaving Chatroom..."
         puts "Clients name:#{@chatrooms[room_ref].clients[arguments[2]].client_name}"
@@ -111,7 +111,7 @@ class Server
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
       when "CLIENT_NAME"
-        client.puts "CHAT:#{chatroom.chatroom_id}\nCLIENT_NAME:#{arguments[2]}\n"
+        client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESS"
       end
     }
 	end
