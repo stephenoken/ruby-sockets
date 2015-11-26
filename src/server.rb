@@ -51,7 +51,7 @@ class Server
 
   def hello_message(client, input)
     puts input
-    client.puts "#{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
+    client.puts "HELO #{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
     puts input
   end
 
