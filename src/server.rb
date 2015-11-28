@@ -8,8 +8,8 @@ class Server
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-  	@pool = Thread.pool(2) # By set the number of connections that are accepted
-    @connections = Hash.new
+  	@pool = Thread.pool(3) # By set the number of connections that are accepted
+    @connections = Array.new
     @studentID = ARGV[2]
     @chatrooms = Hash.new
   end
@@ -18,7 +18,7 @@ class Server
     puts "Server running on : #{@ip}:#{@port}"
     loop{
       Thread.start(@server.accept) do |client|
-        # @connections.push(client)
+        @connections.push(client)
         @pool.process{
           client_connection(client)
          }
@@ -73,16 +73,15 @@ class Server
 
 	def register_client(client_name, room_ref, client)
     puts room_ref
-		c_client = Client.new(client_name)
+		c_client = Client.new(client_name,client)
+    join_msg = "CHAT:#{room_ref}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
 		puts "Client : #{c_client.client_name} #{c_client.client_id}"
 		join_id = @chatrooms[room_ref].join_room(c_client) #Pass the client thread as well
     client.puts "JOIN_ID:#{join_id}"
-    client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
-    @connections.each do  |_key, thread|
-      thread.puts "Hello World"
+    # client.puts join_msg
+    @chatrooms[room_ref].clients.each do |_key,c|
+      c.thread.puts join_msg
     end
-    @connections[room_ref + client_name] = client
-    puts "#{client} #{@connections}"
 	end
 
 	def chatroom_session(client, c_client, chatroom)
