@@ -79,9 +79,7 @@ class Server
 		join_id = @chatrooms[room_ref].join_room(c_client) #Pass the client thread as well
     client.puts "JOIN_ID:#{join_id}"
     # client.puts join_msg
-    @chatrooms[room_ref].clients.each do |_key,c|
-      c.thread.puts join_msg
-    end
+    broadcast_msg_to_room(room_ref,join_msg)
 	end
 
 	def chatroom_session(client, c_client, chatroom)
@@ -99,7 +97,8 @@ class Server
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
       when "CLIENT_NAME"
-        client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
+        leave_msg  = "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
+        broadcast_msg_to_room(room_ref,leave_msg)
         break
       end
     }
@@ -115,6 +114,12 @@ class Server
     end
     arguments[2] = arguments[2].lstrip
     return arguments
+  end
+
+  def broadcast_msg_to_room(room_ref, msg)
+    @chatrooms[room_ref].clients.each do |_key,c|
+      c.thread.puts msg
+    end
   end
 end
 
