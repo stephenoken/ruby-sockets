@@ -14,7 +14,6 @@ class Chatroom
 			return client.client_id
 		else
 			puts "#{client.client_name} has already been taken"
-		end 
+		end
 	end
 end
-

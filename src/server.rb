@@ -9,7 +9,7 @@ class Server
     @port = port
     @server = TCPServer.open(@ip,@port)
   	@pool = Thread.pool(2) # By set the number of connections that are accepted
-    @connections = Array.new
+    @connections = Hash.new
     @studentID = ARGV[2]
     @chatrooms = Hash.new
   end
@@ -18,7 +18,7 @@ class Server
     puts "Server running on : #{@ip}:#{@port}"
     loop{
       Thread.start(@server.accept) do |client|
-        @connections.push(client)
+        # @connections.push(client)
         @pool.process{
           client_connection(client)
          }
@@ -58,8 +58,8 @@ class Server
     client.puts "HELO #{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
   end
 
-	def join_chatroom(message, client)
-		chatroom = Chatroom.new(message)
+	def join_chatroom(chatroom_name, client)
+		chatroom = Chatroom.new(chatroom_name)
 		if @chatrooms[chatroom.chatroom_id].nil?
       @chatrooms[chatroom.chatroom_id] = chatroom
 		else
@@ -67,7 +67,7 @@ class Server
 			chatroom = @chatrooms[chatroom.chatroom_id]
 		end
 		puts "Chatroom id: #{chatroom.chatroom_id}"
-		client.puts "JOINED_CHATROOM:#{message}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
+		client.puts "JOINED_CHATROOM:#{chatroom_name}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
     return chatroom.chatroom_id
     # loop{
     #   arguments = get_client_arguments(client)
@@ -80,13 +80,21 @@ class Server
     # }
 	end
 
-	def register_client(message, room_ref, client)
+	def register_client(client_name, room_ref, client)
     puts room_ref
-		c_client = Client.new(message)
+		c_client = Client.new(client_name)
 		puts "Client : #{c_client.client_name} #{c_client.client_id}"
 		join_id = @chatrooms[room_ref].join_room(c_client) #Pass the client thread as well
-		client.puts "JOIN_ID:#{join_id}"
+    client.puts "JOIN_ID:#{join_id}"
     client.puts "CHAT:#{room_ref}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
+    @connections.each do  |_key, thread|
+      thread.puts "Hello World"
+    end
+    @connections[room_ref + client_name] = client
+    puts "#{client} #{@connections}"
+    # puts "#{client} => #{@chatrooms[room_ref].client_threads}"
+    #  @chatrooms[room_ref].client_threads.each do |t|
+    #  end
 		# chatroom_session(client,c_client,chatroom)
 	end
 
