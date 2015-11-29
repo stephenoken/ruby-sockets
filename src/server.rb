@@ -2,6 +2,7 @@ require "socket"
 require_relative "./../bin/pool.rb"
 require_relative "./chatroom.rb"
 require_relative "./chat_client.rb"
+require_relative "./hash.rb"
 
 class Server
   def initialize(ip,port)
@@ -44,6 +45,8 @@ class Server
         leave_chatroom(arguments[2], client)
       when "CHAT"
         chatroom_session(arguments[2],client)
+      when "DISCONNECT"
+        client_disconnect(client)
 			else
         # client.puts "Invalid Command"
       end
@@ -51,8 +54,8 @@ class Server
   end
 
   def kill_service(client)
-    @connections.each { |_key, thread| thread.close}
-    client.close
+    # @connections.each { |_key, thread| thread.close}
+    # client.close
     @server.close
   end
 
@@ -125,6 +128,27 @@ class Server
       end
     }
   end
+
+	def client_disconnect(client)
+		puts "In client_disconnect"
+		loop {
+			arguments = get_client_arguments(client)
+			case arguments[0]
+			when "CLIENT_NAME"
+				id = CustomHash.hash(arguments[2])
+				puts id
+        @chatrooms.each do |key, chatroom|
+          puts "The key is #{key}"
+          chatroom.clients.delete(id)
+          message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
+          broadcast_msg_to_room(key,message)
+          client.close
+          puts "CLient Closed"
+          break
+        end
+			end
+		}
+	end
 
   def get_client_arguments(client)
     clientInput = client.gets.chomp.to_s
