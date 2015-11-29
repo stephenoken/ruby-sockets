@@ -42,6 +42,8 @@ class Server
         register_client(arguments[2], room_ref, client)
       when "LEAVE_CHATROOM"
         leave_chatroom(arguments[2], client)
+      when "CHAT"
+        chatroom_session(arguments[2],client)
 			else
         # client.puts "Invalid Command"
       end
@@ -82,10 +84,6 @@ class Server
     broadcast_msg_to_room(room_ref,join_msg)
 	end
 
-	def chatroom_session(client, c_client, chatroom)
-
-	end
-
 	def leave_chatroom(room_ref, client)
     puts "Leave Chatroom #{room_ref}"
     loop {
@@ -105,9 +103,31 @@ class Server
       end
     }
 	end
+
+  def chatroom_session(room_ref,client)
+    client_name = ""
+    puts "In chatroom_session"
+    loop {
+      arguments = get_client_arguments(client)
+      case arguments[0]
+      when "JOIN_ID"
+        # join_id = arguments[2]
+        # Insert error handlers
+      when "CLIENT_NAME"
+        puts arguments[2]
+        client_name = arguments[2]
+      when "MESSAGE"
+        puts arguments[2]
+        puts arguments[2]
+        message = "CHAT:#{room_ref}\nCLIENT_NAME:#{client_name}\nMESSAGE:#{arguments[2]}\n\n"
+        broadcast_msg_to_room(room_ref,message)
+      end
+    }
+  end
+
   def get_client_arguments(client)
     clientInput = client.gets.chomp.to_s
-    puts "Client Input:#{clientInput}"
+    puts "<-- Client Input --> #{clientInput}"
     arguments = Array.new
     if clientInput.include? ":"
       arguments = clientInput.partition(":")
