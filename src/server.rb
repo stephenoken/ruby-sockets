@@ -121,6 +121,7 @@ class Server
         puts arguments[2]
         message = "CHAT:#{room_ref}\nCLIENT_NAME:#{client_name}\nMESSAGE:#{arguments[2]}\n\n"
         broadcast_msg_to_room(room_ref,message)
+        break
       end
     }
   end
