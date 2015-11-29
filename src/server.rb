@@ -8,7 +8,7 @@ class Server
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
-  	@pool = Thread.pool(3) # By set the number of connections that are accepted
+  	@pool = Thread.pool(12) # By set the number of connections that are accepted
     @connections = Array.new
     @studentID = ARGV[2]
     @chatrooms = Hash.new
