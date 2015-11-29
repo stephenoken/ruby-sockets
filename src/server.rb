@@ -97,8 +97,9 @@ class Server
         puts "Deleted Client:#{@chatrooms[room_ref].clients}"
         client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
       when "CLIENT_NAME"
-        client_name = agruments[2]
-        leave_msg  = "CHAT:#{room_ref}\nCLIENT_NAME:#{client_name}\nMESSAGE:#{client_name} has left this chatroom.\n\n"
+        leave_msg  = "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
+        puts leave_msg
+        client.puts leave_msg
         broadcast_msg_to_room(room_ref,leave_msg)# There's something ain't right here
         break
       end
