@@ -19,8 +19,8 @@ class Server
     puts "Server running on : #{@ip}:#{@port}"
     loop{
       Thread.start(@server.accept) do |client|
-        @connections.push(client)
         @pool.process{
+          @connections.push(client)
           client_connection(client)
          }
       end
