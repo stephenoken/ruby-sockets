@@ -144,7 +144,9 @@ class Server
         @chatrooms.each do |key, chatroom|
           puts "The key is #{key}"
           message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
-          broadcast_msg_to_room(key,message)
+          if @chatrooms.clients.length >= 1
+            broadcast_msg_to_room(key,message)
+          end
           chatroom.clients.delete(id)
         end
         puts "CLient Closed"
