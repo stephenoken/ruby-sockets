@@ -139,11 +139,11 @@ class Server
 				puts id
         @chatrooms.each do |key, chatroom|
           puts "The key is #{key}"
-          chatroom.clients.delete(id)
           message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
           broadcast_msg_to_room(key,message)
-          # client.close
+          chatroom.clients.delete(id)
           puts "CLient Closed"
+          client.close
           break
         end
 			end
