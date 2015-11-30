@@ -34,7 +34,7 @@ class Server
       command = arguments[0]
       case command
       when "KILL_SERVICE"
-        kill_service(client)
+        kill_service
       when "HELO"
         hello_message(client, arguments[2])
       when "JOIN_CHATROOM"
@@ -53,10 +53,14 @@ class Server
     }
   end
 
-  def kill_service(client)
-    # @connections.each { |_key, thread| thread.close}
+  def kill_service
+    @connections.each do |socket|
+      socket.close
+    end
     # client.close
     @server.close
+    abort('Goodbye')
+    exit
   end
 
   def hello_message(client, input)
