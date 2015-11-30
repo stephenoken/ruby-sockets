@@ -142,10 +142,10 @@ class Server
           message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
           broadcast_msg_to_room(key,message)
           chatroom.clients.delete(id)
-          puts "CLient Closed"
-          client.close
-          break
         end
+        puts "CLient Closed"
+        # client.close
+        break
 			end
 		}
 	end
