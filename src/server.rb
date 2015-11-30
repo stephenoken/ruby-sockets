@@ -125,7 +125,6 @@ class Server
         client_name = arguments[2]
       when "MESSAGE"
         puts arguments[2]
-        puts arguments[2]
         message = "CHAT:#{room_ref}\nCLIENT_NAME:#{client_name}\nMESSAGE:#{arguments[2]}\n\n"
         broadcast_msg_to_room(room_ref,message)
         break
@@ -141,6 +140,7 @@ class Server
 			when "CLIENT_NAME"
 				id = CustomHash.hash(arguments[2])
 				puts id
+        puts "Chatrooms #{@chatrooms}"
         @chatrooms.each do |key, chatroom|
           puts "The key is #{key}"
           message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
