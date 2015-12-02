@@ -58,8 +58,8 @@ class Server
     #   socket.close
     # end
     client.close
+    @server.close
     puts "Goodbye"
-    # @server.close
   end
 
   def hello_message(client, input)
@@ -169,7 +169,7 @@ class Server
 
   def broadcast_msg_to_room(room_ref, msg)
     @chatrooms[room_ref].clients.each do |_key,c|
-      puts "--> Broadcasting message:"
+      puts "#{_key}--> Broadcasting message:"
       c.thread.puts msg
     end
   end
