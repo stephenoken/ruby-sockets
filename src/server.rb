@@ -147,7 +147,7 @@ class Server
           message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
           unless chatroom.clients.include?(id)
             #Skip over rooms that client is not a member of
-            c.puts message
+            client.puts message
             break
           end
           puts "Disconnect message: #{message}"
