@@ -22,6 +22,7 @@ class Server
         @pool.process{
           @connections.push(client)
           client_connection(client)
+          exit
          }
       end
     }
