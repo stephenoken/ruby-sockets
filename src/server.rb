@@ -34,7 +34,7 @@ class Server
       command = arguments[0]
       case command
       when "KILL_SERVICE"
-        kill_service
+        kill_service(client)
       when "HELO"
         hello_message(client, arguments[2])
       when "JOIN_CHATROOM"
@@ -53,14 +53,13 @@ class Server
     }
   end
 
-  def kill_service
-    @connections.each do |socket|
-      socket.close
-    end
-    # client.close
-    @server.close
-    abort('Goodbye')
-    exit
+  def kill_service(client)
+    # @connections.each do |socket|
+    #   socket.close
+    # end
+    client.close
+    puts "Goodbye"
+    # @server.close
   end
 
   def hello_message(client, input)
@@ -105,7 +104,7 @@ class Server
         leave_msg  = "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
         puts leave_msg
         client.puts leave_msg
-        broadcast_msg_to_room(room_ref,leave_msg)# There's something ain't right here
+        broadcast_msg_to_room(room_ref,leave_msg)
         break
       end
     }
