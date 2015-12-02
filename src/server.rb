@@ -141,7 +141,7 @@ class Server
 				puts id
         puts "Chatrooms #{@chatrooms}"
         @chatrooms.each do |key, chatroom|
-          if chatroom.clients.include?(id)#Skip over rooms that client is not a member of
+          unless chatroom.clients.include?(id)#Skip over rooms that client is not a member of
             break
           end
           puts "The key is #{key}"
@@ -173,7 +173,6 @@ class Server
   def broadcast_msg_to_room(room_ref, msg)
     @chatrooms[room_ref].clients.each do |_key,c|
       puts "#{_key}--> Broadcasting message:"
-			puts "Message to be sent :\n#{msg}"
       c.thread.puts msg
     end
   end
