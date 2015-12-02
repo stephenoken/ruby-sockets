@@ -170,6 +170,7 @@ class Server
   def broadcast_msg_to_room(room_ref, msg)
     @chatrooms[room_ref].clients.each do |_key,c|
       puts "#{_key}--> Broadcasting message:"
+			puts "Message to be sent :\n #{msg}"
       c.thread.puts msg
       if @chatrooms[room_ref].clients.length == 1
         break
