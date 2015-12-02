@@ -57,9 +57,9 @@ class Server
     @connections.each do |socket|
       socket.close
     end
+    puts "Test"
     @server.close
     # puts "Goodbye"
-    abort
     exit
   end
 
