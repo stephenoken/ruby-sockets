@@ -13,13 +13,12 @@ class Server
     @connections = Array.new
     @studentID = ARGV[2]
     @chatrooms = Hash.new
-    @main_thread
   end
 
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
-      @main_thread = Thread.start(@server.accept) do |client|
+      Thread.start(@server.accept) do |client|
         @pool.process{
           @connections.push(client)
           client_connection(client)
@@ -60,7 +59,7 @@ class Server
     end
     puts "Test"
     @server.close
-    Thread.kill(@main_thread)
+    Thread.kill(self)
     puts "Goodbye"
     exit
   end
