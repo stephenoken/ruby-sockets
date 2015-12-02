@@ -59,8 +59,8 @@ class Server
     end
     puts "Test"
     @server.close
-    puts "Goodbye"
     exit
+    puts "Goodbye"
   end
 
   def hello_message(client, input)
