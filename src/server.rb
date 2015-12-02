@@ -141,7 +141,8 @@ class Server
 				puts id
         puts "Chatrooms #{@chatrooms}"
         @chatrooms.each do |key, chatroom|
-          unless chatroom.clients.include?(id)#Skip over rooms that client is not a member of
+          unless chatroom.clients.include?(id)
+            #Skip over rooms that client is not a member of
             break
           end
           puts "The key is #{key}"
@@ -151,7 +152,7 @@ class Server
           chatroom.clients.delete(id)
         end
         puts "Client Closed"
-        # client.close
+        client.close
         break
 			end
 		}
