@@ -89,7 +89,7 @@ class Server
 		join_id = @chatrooms[room_ref].join_room(c_client) #Pass the client thread as well
     client.puts "JOIN_ID:#{join_id}"
     # client.puts join_msg
-    broadcast_msg_to_room(room_ref,join_msg)
+    broadcast_msg_to_room(room_ref,join_msg,client)
 	end
 
 	def leave_chatroom(room_ref, client)
@@ -106,7 +106,7 @@ class Server
         leave_msg  = "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
         puts leave_msg
         client.puts leave_msg
-        broadcast_msg_to_room(room_ref,leave_msg)
+        broadcast_msg_to_room(room_ref,leave_msg,client)
         break
       end
     }
@@ -127,7 +127,7 @@ class Server
       when "MESSAGE"
         puts arguments[2]
         message = "CHAT:#{room_ref}\nCLIENT_NAME:#{client_name}\nMESSAGE:#{arguments[2]}\n\n"
-        broadcast_msg_to_room(room_ref,message)
+        broadcast_msg_to_room(room_ref,message,client)
         break
       end
     }
@@ -143,16 +143,14 @@ class Server
 				puts id
         puts "Chatrooms #{@chatrooms}"
         @chatrooms.each do |key, chatroom|
-          puts "The key is #{key}"
-          message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
-          unless chatroom.clients.include?(id)
+          if chatroom.clients.include?(id)
             #Skip over rooms that client is not a member of
-            client.puts message
-            break
+            puts "The key is #{key}"
+            message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
+            puts "Disconnect message: #{message}"
+            broadcast_msg_to_room(key,message,client)
+            chatroom.clients.delete(id)
           end
-          puts "Disconnect message: #{message}"
-          broadcast_msg_to_room(key,message)
-          chatroom.clients.delete(id)
         end
         puts "Client Closed"
         client.close
@@ -174,10 +172,15 @@ class Server
     return arguments
   end
 
-  def broadcast_msg_to_room(room_ref, msg)
+  def broadcast_msg_to_room(room_ref, msg, client)
     @chatrooms[room_ref].clients.each do |_key,c|
-      puts "#{_key}--> Broadcasting message:"
-      c.thread.puts msg
+      unless client == c
+        puts "Found our thread"
+        client.puts msg
+      else
+        puts "#{_key}--> Broadcasting message:"
+        c.thread.puts msg
+      end
     end
   end
 end
