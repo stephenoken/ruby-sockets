@@ -59,7 +59,7 @@ class Server
     end
     puts "Test"
     @server.close
-    # puts "Goodbye"
+    puts "Goodbye"
     exit
   end
 
