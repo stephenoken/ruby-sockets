@@ -145,6 +145,7 @@ class Server
         @chatrooms.each do |key, chatroom|
           unless chatroom.clients.include?(id)
             #Skip over rooms that client is not a member of
+            c.puts message
             break
           end
           puts "The key is #{key}"
