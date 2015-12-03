@@ -119,8 +119,6 @@ class Server
       arguments = get_client_arguments(client)
       case arguments[0]
       when "JOIN_ID"
-        # join_id = arguments[2]
-        # Insert error handlers
       when "CLIENT_NAME"
         puts arguments[2]
         client_name = arguments[2]
@@ -144,7 +142,7 @@ class Server
         puts "Chatrooms #{@chatrooms}"
         @chatrooms.each do |key, chatroom|
           if chatroom.clients.include?(id)
-            #Skip over rooms that client is not a member of
+            #Skips over rooms that client is not a member of
             puts "The key is #{key}"
             message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
             puts "Disconnect message: #{message}"
