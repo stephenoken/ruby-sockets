@@ -1,11 +1,26 @@
 require "socket"
+require "optparse"
 require_relative "./../bin/pool.rb"
 require_relative "./chatroom.rb"
 require_relative "./chat_client.rb"
 require_relative "./hash.rb"
 
+# Commandline options
+options = {:guid => 0}
+OptionParser.new do |opts|
+  opts.banner = "Usage: server.rb [options]"
+  opts.on("-b","--boot guid","guid") do |guid|
+    options[:guid] = guid
+    puts "Your guid: #{guid}"
+  end
+  opts.on('-h', '--help', 'Displays Help') do
+		puts opts
+		exit
+	end
+end.parse!
+
 class Server
-  def initialize(ip,port)
+  def initialize(ip,port,guid)
     @ip = ip
     @port = port
     @server = TCPServer.open(@ip,@port)
@@ -13,6 +28,7 @@ class Server
     @connections = Array.new
     @studentID = ARGV[2]
     @chatrooms = Hash.new
+    @guid = guid
   end
 
   def run
@@ -178,5 +194,5 @@ class Server
   end
 end
 
-server = Server.new(ARGV[0]||'localhost',ARGV[1]||2000)
+server = Server.new(ARGV[0]||'localhost',ARGV[1]||2000, options[:guid])
 server.run()
