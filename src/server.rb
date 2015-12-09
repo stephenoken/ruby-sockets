@@ -6,12 +6,24 @@ require_relative "./chat_client.rb"
 require_relative "./hash.rb"
 
 # Commandline options
-options = {:guid => 0}
+options = {
+  :guid => 0,
+  :ip => "localhost",
+  :id => 0
+}
 OptionParser.new do |opts|
   opts.banner = "Usage: server.rb [options]"
-  opts.on("-b","--boot guid","guid") do |guid|
+  opts.on("-b","--boot guid","Set Guid") do |guid|
     options[:guid] = guid
     puts "Your guid: #{guid}"
+  end
+  opts.on("-bs","--bootstrap ip","Set Target IP Address") do |ip|
+    options[:ip] = ip
+    puts "Target IP address: #{ip}"
+  end
+  opts.on("-id","--id id","Set Target ID Address") do |id|
+    options[:id] = ip
+    puts "Target ID: #{id}"
   end
   opts.on('-h', '--help', 'Displays Help') do
 		puts opts
@@ -194,5 +206,5 @@ class Server
   end
 end
 
-server = Server.new(ARGV[0]||'localhost',ARGV[1]||2000, options[:guid])
+server = Server.new(ARGV[0]||'localhost',ARGV[1]||8767, options[:guid])
 server.run()
