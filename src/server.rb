@@ -1,5 +1,6 @@
 require "socket"
 require "optparse"
+require "json"
 require_relative "./../bin/pool.rb"
 require_relative "./chatroom.rb"
 require_relative "./chat_client.rb"
@@ -41,6 +42,7 @@ class Server
     @studentID = ARGV[2]
     @chatrooms = Hash.new
     @guid = guid
+    @routing_table = Hash.new
   end
 
   def run
@@ -49,154 +51,48 @@ class Server
       Thread.start(@server.accept) do |client|
         @pool.process{
           @connections.push(client)
-          client_connection(client)
+          # client_connection(client)
+          peer_2_peer_connection(client)
          }
       end
     }
   end
 
-  def client_connection(client)
-    room_ref = ""
-		loop{
-      arguments = get_client_arguments(client)
-      command = arguments[0]
-      case command
-      when "KILL_SERVICE"
-        kill_service
-      when "HELO"
-        hello_message(client, arguments[2])
-      when "JOIN_CHATROOM"
-				room_ref = join_chatroom(arguments[2],client)
-      when "CLIENT_NAME"
-        register_client(arguments[2], room_ref, client)
-      when "LEAVE_CHATROOM"
-        leave_chatroom(arguments[2], client)
-      when "CHAT"
-        chatroom_session(arguments[2],client)
-      when "DISCONNECT"
-        client_disconnect(client)
-			else
-        # client.puts "Invalid Command"
-      end
+  def peer_2_peer_connection(client)
+    client_input = parse_client_input(client)
+    @routing_table[client_input["node_id"]] = {
+      :node_id => client_input["node_id"],
+      :ip_address => client_input["ip_address"]
     }
+    puts @routing_table
+    client.puts JSON.generate(message_generation("ROUTING_INFO",client_input))
   end
-
-  def kill_service
-    @connections.each do |socket|
-      socket.close
+  def message_generation(message_type, input)
+    base_message = {
+      :type => message_type,
+      :node_id => "#{@guid}"
+    }
+    case message_type
+    when "JOINING_NETWORK"
+      base_message.merge!({
+        :ip_address => "#{@ip}"
+      })
+    when "ROUTING_INFO"
+      base_message.merge!({
+        :node_id => input["node_id"],
+        :ip_address => "#{@ip}",
+        :route_table => @routing_table.values
+      })
     end
-    puts "Test"
-    @server.close
-    Thread.kill(self)
-    puts "Goodbye"
-    exit
+    return base_message
   end
 
-  def hello_message(client, input)
-    client.puts "HELO #{input}\nIP:#{@ip}\nPort:#{@port}\nStudentID:#{@studentID}"
+  def parse_client_input(client)
+    client_input_json = client.gets.chomp.to_s
+    puts "<-- Client Input --> #{client_input_json}"
+    return JSON.parse(client_input_json)
   end
-
-	def join_chatroom(chatroom_name, client)
-		chatroom = Chatroom.new(chatroom_name)
-		if @chatrooms[chatroom.chatroom_id].nil?
-      @chatrooms[chatroom.chatroom_id] = chatroom
-		else
-      puts "Chatroom Exists"
-			chatroom = @chatrooms[chatroom.chatroom_id]
-		end
-		puts "Chatroom id: #{chatroom.chatroom_id}"
-		client.puts "JOINED_CHATROOM:#{chatroom_name}\nSERVER_IP:#{@ip}\nPORT:#{@port}\nROOM_REF:#{chatroom.chatroom_id}"
-    return chatroom.chatroom_id
-	end
-
-	def register_client(client_name, room_ref, client)
-    puts room_ref
-		c_client = Client.new(client_name,client)
-    join_msg = "CHAT:#{room_ref}\nCLIENT_NAME:#{c_client.client_name}\nMESSAGE:#{c_client.client_name} has joined this chatroom.\n\n"
-		puts "Client : #{c_client.client_name} #{c_client.client_id}"
-		join_id = @chatrooms[room_ref].join_room(c_client) #Pass the client thread as well
-    client.puts "JOIN_ID:#{join_id}"
-    # client.puts join_msg
-    broadcast_msg_to_room(room_ref,join_msg)
-	end
-
-	def leave_chatroom(room_ref, client)
-    puts "Leave Chatroom #{room_ref}"
-    loop {
-      arguments = get_client_arguments(client)
-      case arguments[0]
-      when "JOIN_ID"
-        puts "Clients name:#{@chatrooms[room_ref].clients[arguments[2]].client_name}"
-        @chatrooms[room_ref].clients.delete(arguments[2])
-        puts "Deleted Client:#{@chatrooms[room_ref].clients}"
-        client.puts "LEFT_CHATROOM:#{room_ref}\nJOIN_ID:#{arguments[2]}"
-      when "CLIENT_NAME"
-        leave_msg  = "CHAT:#{room_ref}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
-        puts leave_msg
-        client.puts leave_msg
-        broadcast_msg_to_room(room_ref,leave_msg)
-        break
-      end
-    }
-	end
-
-  def chatroom_session(room_ref,client)
-    client_name = ""
-    puts "In chatroom_session"
-    loop {
-      arguments = get_client_arguments(client)
-      case arguments[0]
-      when "JOIN_ID"
-      when "CLIENT_NAME"
-        puts arguments[2]
-        client_name = arguments[2]
-      when "MESSAGE"
-        puts arguments[2]
-        message = "CHAT:#{room_ref}\nCLIENT_NAME:#{client_name}\nMESSAGE:#{arguments[2]}\n\n"
-        broadcast_msg_to_room(room_ref,message)
-        break
-      end
-    }
-  end
-
-	def client_disconnect(client)
-		puts "In client_disconnect"
-		loop {
-			arguments = get_client_arguments(client)
-			case arguments[0]
-			when "CLIENT_NAME"
-				id = CustomHash.hash(arguments[2])
-				puts id
-        puts "Chatrooms #{@chatrooms}"
-        @chatrooms.each do |key, chatroom|
-          if chatroom.clients.include?(id)
-            #Skips over rooms that client is not a member of
-            puts "The key is #{key}"
-            message = "CHAT:#{key}\nCLIENT_NAME:#{arguments[2]}\nMESSAGE:#{arguments[2]} has left this chatroom.\n\n"
-            puts "Disconnect message: #{message}"
-            broadcast_msg_to_room(key,message)
-            chatroom.clients.delete(id)
-          end
-        end
-        puts "Client Closed"
-        client.close
-        break
-			end
-		}
-	end
-
-  def get_client_arguments(client)
-    clientInput = client.gets.chomp.to_s
-    puts "<-- Client Input --> #{clientInput}"
-    arguments = Array.new
-    if clientInput.include? ":"
-      arguments = clientInput.partition(":")
-    else
-      arguments = clientInput.partition(" ")
-    end
-    arguments[2] = arguments[2].lstrip
-    return arguments
-  end
+# Lab 3
 
   def broadcast_msg_to_room(room_ref, msg)
     @chatrooms[room_ref].clients.each do |_key,c|
@@ -206,5 +102,5 @@ class Server
   end
 end
 
-server = Server.new(ARGV[0]||'localhost',ARGV[1]||8767, options[:guid])
+server = Server.new(options[:ip]||ARGV[0]||'localhost', ARGV[1]||8767, options[:guid])
 server.run()

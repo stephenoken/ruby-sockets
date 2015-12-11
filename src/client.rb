@@ -1,4 +1,5 @@
 require "socket"
+require "json"
 
 class Client
   def initialize(server)
@@ -25,7 +26,13 @@ class Client
 
   def send
     # puts "Enter Command"
+    join_message = {
+      :type => "JOINING_NETWORK",
+      :node_id => "#{ARGV[0]}",
+      :ip_address => "192.168.1"
+    }
     @request = Thread.new do
+      @server.puts(JSON.generate(join_message))
       loop {
          @server.puts($stdin.gets.chomp)
       }
@@ -33,5 +40,5 @@ class Client
   end
 end
 
-server = TCPSocket.open(ARGV[0]||"localhost",ARGV[1]||8767)
+server = TCPSocket.open("localhost",ARGV[1]||8767)
 Client.new(server)
