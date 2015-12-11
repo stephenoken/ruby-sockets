@@ -43,8 +43,19 @@ class Server
     @chatrooms = Hash.new
     @guid = guid
     @routing_table = Hash.new
+    @udp_server = UDPSocket.new
+    @udp_server.bind(@ip,@port)
+    recieve_message
   end
 
+  def recieve_message
+    Thread.new do
+      loop{
+        data,_ = @udp_server.recvfrom(1024)
+        puts "From client #{data}"
+      }
+    end
+  end
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
@@ -59,13 +70,23 @@ class Server
 
   def peer_2_peer_connection(client)
     client_input = parse_client_input(client)
+
     @routing_table[client_input["node_id"]] = {
       :node_id => client_input["node_id"],
       :ip_address => client_input["ip_address"]
     }
     puts @routing_table
     client.puts JSON.generate(message_generation("ROUTING_INFO",client_input))
+    client.close
   end
+  def notify_network(client_input)
+    udp_socket = UDPSocket.new
+    data = JSON.generate(message_generation("JOINING_NETWORK_RELAY"))
+    @routing_table.each do |key,c|
+
+    end
+  end
+
   def message_generation(message_type, input)
     base_message = {
       :type => message_type,
@@ -82,6 +103,10 @@ class Server
         :ip_address => "#{@ip}",
         :route_table => @routing_table.values
       })
+    when "JOINING_NETWORK_RELAY"
+        base_message.merge!({
+          :gateway_id => input["node_id"]
+          })
     end
     return base_message
   end

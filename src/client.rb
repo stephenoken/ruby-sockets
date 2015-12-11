@@ -31,6 +31,9 @@ class Client
       :node_id => "#{ARGV[0]}",
       :ip_address => "192.168.1"
     }
+    sock = UDPSocket.new
+    data = JSON.generate(join_message)
+    sock.send(data, 0, 'localhost', 8767)
     @request = Thread.new do
       @server.puts(JSON.generate(join_message))
       loop {
