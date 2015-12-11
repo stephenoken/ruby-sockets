@@ -23,7 +23,7 @@ OptionParser.new do |opts|
     puts "Target IP address: #{ip}"
   end
   opts.on("-id","--id id","Set Target ID Address") do |id|
-    options[:id] = ip
+    options[:id] = id
     puts "Target ID: #{id}"
   end
   opts.on('-h', '--help', 'Displays Help') do
@@ -51,7 +51,6 @@ class Server
       Thread.start(@server.accept) do |client|
         @pool.process{
           @connections.push(client)
-          # client_connection(client)
           peer_2_peer_connection(client)
          }
       end
@@ -102,5 +101,5 @@ class Server
   end
 end
 
-server = Server.new(options[:ip]||ARGV[0]||'localhost', ARGV[1]||8767, options[:guid])
+server = Server.new(ARGV[0]||'localhost', ARGV[1]||8767, options[:guid])
 server.run()
