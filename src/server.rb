@@ -6,6 +6,10 @@ require_relative "./chatroom.rb"
 require_relative "./chat_client.rb"
 require_relative "./hash.rb"
 
+# This is super important for finding the numerically closest value to the guid
+# numbers = ["1","6","7","10","2"]
+# p numbers.min_by { |x| (x.to_f - 5).abs }
+
 # Commandline options
 options = {
   :guid => 0,
@@ -67,15 +71,20 @@ class Server
         case arguments[0]
         when "CHAT"
           get_tags(arguments[2].split(' ')).each do |tag|
-            message  = message_generation(arguments[0],{
+            message  = JSON.generate(message_generation(arguments[0],{
               :target_id => CustomHash.hash(tag[1..-1]),
               :tag => tag,
               :text => arguments[2]
-            })
-            puts "Message #{message}"
+            }))
+            puts "CHAT #{message}"
+            # Convert to JSON and send as a UDP to the numerically closest node
           end
-        # when "CHAT_RETRIEVE"
-
+        when "CHAT_RETRIEVE"
+          message = JSON.generate(message_generation(arguments[0],{
+              :tag => arguments[2],
+              :node_id => CustomHash.hash(arguments[2])
+          }))
+          puts "CHAT_RETRIEVE #{message}"
         end
       }
     end
@@ -142,6 +151,12 @@ class Server
           :tag => input[:tag],
           :text => input[:text]
       })
+    when "CHAT_RETRIEVE"
+      base_message.merge!({
+          :tag => input[:tag],
+          :node_id => input[:node_id],
+          :sender_id => base_message.delete(:node_id)
+      })
     end
     return base_message
   end
@@ -152,14 +167,6 @@ class Server
     return JSON.parse(client_input_json)
   end
 # Lab 3
-
-  def broadcast_msg_to_room(room_ref, msg)
-    @chatrooms[room_ref].clients.each do |_key,c|
-      puts "#{_key}--> Broadcasting message:"
-      c.thread.puts msg
-    end
-  end
-
   def get_client_arguments(client_input)
     puts "<-- Client Input --> #{client_input}"
     arguments = Array.new
