@@ -46,6 +46,7 @@ class Server
     @udp_server = UDPSocket.new
     @udp_server.bind(@ip,@port)
     recieve_message
+    send_message
   end
 
   def recieve_message
@@ -56,6 +57,40 @@ class Server
       }
     end
   end
+
+  def send_message
+    Thread.new do
+      loop{
+        puts "Enter command"
+        command = $stdin.gets.chomp
+        arguments = get_client_arguments(command)
+        case arguments[0]
+        when "CHAT"
+          get_tags(arguments[2].split(' ')).each do |tag|
+            message  = message_generation(arguments[0],{
+              :target_id => CustomHash.hash(tag[1..-1]),
+              :tag => tag,
+              :text => arguments[2]
+            })
+            puts "Message #{message}"
+          end
+        # when "CHAT_RETRIEVE"
+
+        end
+      }
+    end
+  end
+
+  def get_tags(words)
+    tags = []
+    words.each do |word|
+      if word[0] == "#"
+        tags.push(word.downcase)
+      end
+    end
+    return tags
+  end
+
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
@@ -79,13 +114,6 @@ class Server
     client.puts JSON.generate(message_generation("ROUTING_INFO",client_input))
     client.close
   end
-  def notify_network(client_input)
-    udp_socket = UDPSocket.new
-    data = JSON.generate(message_generation("JOINING_NETWORK_RELAY"))
-    @routing_table.each do |key,c|
-
-    end
-  end
 
   def message_generation(message_type, input)
     base_message = {
@@ -104,9 +132,16 @@ class Server
         :route_table => @routing_table.values
       })
     when "JOINING_NETWORK_RELAY"
-        base_message.merge!({
-          :gateway_id => input["node_id"]
-          })
+      base_message.merge!({
+        :gateway_id => input["node_id"]
+      })
+    when "CHAT"
+      base_message.merge!({
+          :target_id => input[:target_id],
+          :sender_id => base_message.delete(:node_id),
+          :tag => input[:tag],
+          :text => input[:text]
+      })
     end
     return base_message
   end
@@ -123,6 +158,18 @@ class Server
       puts "#{_key}--> Broadcasting message:"
       c.thread.puts msg
     end
+  end
+
+  def get_client_arguments(client_input)
+    puts "<-- Client Input --> #{client_input}"
+    arguments = Array.new
+    if client_input.include? ":"
+      arguments = client_input.partition(":")
+    else
+     arguments = client_input.partition(" ")
+    end
+    arguments[2] = arguments[2].lstrip
+    return arguments
   end
 end
 
