@@ -29,7 +29,7 @@ class Client
     join_message = {
       :type => "JOINING_NETWORK",
       :node_id => "#{ARGV[0]}",
-      :ip_address => "192.168.1"
+      :ip_address => "192.168.1.12"
     }
     sock = UDPSocket.new
     data = JSON.generate(join_message)

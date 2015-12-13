@@ -47,10 +47,17 @@ class Server
     @chatrooms = Hash.new
     @guid = guid
     @routing_table = Hash.new
+    @are_pings_ack = Hash.new(false)
+    # Each routing table conatains the host node
+    @routing_table[@guid] = {
+        :node_id => @guid,
+        :ip_address => @ip
+    }
     @udp_server = UDPSocket.new
     @udp_server.bind(@ip,@port)
     recieve_message
     send_message
+    ping_table
   end
 
   def recieve_message
@@ -58,6 +65,18 @@ class Server
       loop{
         data,_ = @udp_server.recvfrom(1024)
         puts "From client #{data}"
+        parsed_data = JSON.parse(data)
+        case parsed_data["type"]
+        when "PING"
+          message = message_generation("ACK",{
+              :node_id => parsed_data["target_id"],
+              :ip_address => @ip
+          })
+          puts "ACK response: #{message}"
+          udp_send(message,parsed_data[:ip_address])
+        when "ACK"
+          @are_pings_ack[parsed_data["node_id"]] = true
+        end
       }
     end
   end
@@ -71,19 +90,20 @@ class Server
         case arguments[0]
         when "CHAT"
           get_tags(arguments[2].split(' ')).each do |tag|
-            message  = JSON.generate(message_generation(arguments[0],{
+            message  = message_generation(arguments[0],{
               :target_id => CustomHash.hash(tag[1..-1]),
               :tag => tag,
               :text => arguments[2]
-            }))
+            })
             puts "CHAT #{message}"
             # Convert to JSON and send as a UDP to the numerically closest node
           end
         when "CHAT_RETRIEVE"
-          message = JSON.generate(message_generation(arguments[0],{
+          arguments[2] = arguments[2].downcase
+          message = message_generation(arguments[0],{
               :tag => arguments[2],
               :node_id => CustomHash.hash(arguments[2])
-          }))
+          })
           puts "CHAT_RETRIEVE #{message}"
         end
       }
@@ -100,6 +120,32 @@ class Server
     return tags
   end
 
+  def ping_table
+    Thread.new do
+      loop{
+        sleep(10.minutes)
+        @routing_table.each do |_,route|
+          data = message_generation("PING",route)
+          udp_send(data,route[:ip_address])
+          @are_pings_ack[route[:node_id]]
+          sleep(30)
+          if @are_pings_ack[route[:node_id]]
+            puts "Acknowldged!!!"
+          else
+            puts "The node is dead long live the node :("
+            @routing_table.delete(route[:node_id])
+          end
+        end
+      }
+    end
+  end
+
+  def udp_send(data, ip_address)
+    puts "Sending data --> #{data}"
+    sock = UDPSocket.new
+    sock.send(data, 0, ip_address, 8767)
+    sock.close
+  end
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
@@ -120,7 +166,7 @@ class Server
       :ip_address => client_input["ip_address"]
     }
     puts @routing_table
-    client.puts JSON.generate(message_generation("ROUTING_INFO",client_input))
+    client.puts message_generation("ROUTING_INFO",client_input)
     client.close
   end
 
@@ -157,8 +203,19 @@ class Server
           :node_id => input[:node_id],
           :sender_id => base_message.delete(:node_id)
       })
+    when "PING"
+      base_message.merge!({
+        :target_id => input[:node_id],
+        :sender_id => base_message.delete(:node_id),
+        :ip_address => input[:ip_address]
+      })
+    when "ACK"
+      base_message.merge!({
+        :node_id => input[:node_id],
+        :ip_address => input[:ip_address]
+      })
     end
-    return base_message
+    return JSON.generate(base_message)
   end
 
   def parse_client_input(client)
