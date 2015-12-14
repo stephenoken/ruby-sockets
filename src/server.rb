@@ -139,7 +139,7 @@ class Server
   def ping_table
     Thread.new do
       loop{
-        sleep(3)
+        sleep(10.minutes)
         @routing_table.each do |_,route|
           data = message_generation("PING",route)
           udp_send(data,route[:ip_address])
