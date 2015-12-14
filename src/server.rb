@@ -41,7 +41,6 @@ end.parse!
 def join_network(server,is_regular_node,target_ip)
   if is_regular_node
     puts "hello"
-    # puts "target ip: #{target_ip}"
     server.udp_send(server.message_generation("JOINING_NETWORK",nil),target_ip)
     puts "you aren't the node"
   else
@@ -83,7 +82,7 @@ class Server
             :node_id => parsed_data["node_id"],
             :ip_address => parsed_data["ip_address"]
           }
-          udp_send(message_generation("ROUTING_INFO",parsed_data),parsed_data[:ip_address])
+          udp_send(message_generation("ROUTING_INFO",parsed_data),parsed_data["ip_address"])
         when "PING"
           message = message_generation("ACK",{
               :node_id => parsed_data["target_id"],
@@ -158,7 +157,7 @@ class Server
   end
 
   def udp_send(data, ip_address)
-    puts "Sending data --> #{data}"
+    puts ">-- Sending data to #{ip_address} --> #{data}"
     sock = UDPSocket.new
     sock.send(data, 0, ip_address, 8767)
     sock.close
