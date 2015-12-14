@@ -14,20 +14,22 @@ require_relative "./hash.rb"
 options = {
   :guid => 0,
   :ip => "localhost",
-  :id => 0
+  :id => 0,
+  :regular_node => true
 }
 OptionParser.new do |opts|
   opts.banner = "Usage: server.rb [options]"
   opts.on("-b","--boot guid","Set Guid") do |guid|
     options[:guid] = guid
+    options[:regular_node] = false
     puts "Your guid: #{guid}"
   end
   opts.on("-bs","--bootstrap ip","Set Target IP Address") do |ip|
     options[:ip] = ip
     puts "Target IP address: #{ip}"
   end
-  opts.on("-id","--id id","Set Target ID Address") do |id|
-    options[:id] = id
+  opts.on("-id","--id id","Set ID") do |id|
+    options[:guid] = id
     puts "Target ID: #{id}"
   end
   opts.on('-h', '--help', 'Displays Help') do
@@ -36,6 +38,16 @@ OptionParser.new do |opts|
 	end
 end.parse!
 
+def join_network(server,is_regular_node,target_ip)
+  if is_regular_node
+    puts "hello"
+    # puts "target ip: #{target_ip}"
+    server.udp_send(server.message_generation("JOINING_NETWORK",nil),target_ip)
+    puts "you aren't the node"
+  else
+    puts "You are the node"
+  end
+end
 class Server
   def initialize(ip,port,guid)
     @ip = ip
@@ -225,4 +237,5 @@ class Server
 end
 
 server = Server.new(ARGV[0]||'localhost', ARGV[1]||8767, options[:guid])
+join_network(server,options[:regular_node],options[:ip])
 server.run()
