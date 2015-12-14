@@ -89,7 +89,7 @@ class Server
               :ip_address => @ip
           })
           puts "ACK response: #{message}"
-          udp_send(message,parsed_data[:ip_address])
+          udp_send(message,parsed_data["ip_address"])
         when "ACK"
           @are_pings_ack[parsed_data["node_id"]] = true
         end
@@ -139,7 +139,7 @@ class Server
   def ping_table
     Thread.new do
       loop{
-        sleep(10.minutes)
+        sleep(3)
         @routing_table.each do |_,route|
           data = message_generation("PING",route)
           udp_send(data,route[:ip_address])
