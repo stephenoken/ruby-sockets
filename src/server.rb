@@ -40,7 +40,6 @@ class Server
   def initialize(ip,port,guid)
     @ip = ip
     @port = port
-    @server = TCPServer.open(@ip,@port)
   	@pool = Thread.pool(12) # By set the number of connections that are accepted
     @connections = Array.new
     @studentID = ARGV[2]
@@ -67,6 +66,12 @@ class Server
         puts "From client #{data}"
         parsed_data = JSON.parse(data)
         case parsed_data["type"]
+        when "JOINING_NETWORK"
+          @routing_table[parsed_data["node_id"]] = {
+            :node_id => parsed_data["node_id"],
+            :ip_address => parsed_data["ip_address"]
+          }
+          udp_send(message_generation("ROUTING_INFO",parsed_data),parsed_data[:ip_address])
         when "PING"
           message = message_generation("ACK",{
               :node_id => parsed_data["target_id"],
@@ -149,25 +154,7 @@ class Server
   def run
     puts "Server running on : #{@ip}:#{@port}"
     loop{
-      Thread.start(@server.accept) do |client|
-        @pool.process{
-          @connections.push(client)
-          peer_2_peer_connection(client)
-         }
-      end
     }
-  end
-
-  def peer_2_peer_connection(client)
-    client_input = parse_client_input(client)
-
-    @routing_table[client_input["node_id"]] = {
-      :node_id => client_input["node_id"],
-      :ip_address => client_input["ip_address"]
-    }
-    puts @routing_table
-    client.puts message_generation("ROUTING_INFO",client_input)
-    client.close
   end
 
   def message_generation(message_type, input)
