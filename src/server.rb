@@ -41,7 +41,7 @@ end.parse!
 def join_network(server,is_regular_node,target_ip)
   if is_regular_node
     puts "hello"
-    server.udp_send(server.message_generation("JOINING_NETWORK",nil),target_ip)
+    server.udp_send(server.message_generation("JOINING_NETWORK",{:ip_address => ARGV[0]}),target_ip)
     puts "you aren't the node"
   else
     puts "You are the node"
@@ -139,9 +139,10 @@ class Server
   def ping_table
     Thread.new do
       loop{
-        sleep(10.minutes)
+        sleep(10)
         @routing_table.each do |_,route|
           data = message_generation("PING",route)
+          puts "route #{route}"
           udp_send(data,route[:ip_address])
           @are_pings_ack[route[:node_id]]
           sleep(30)
@@ -176,7 +177,7 @@ class Server
     case message_type
     when "JOINING_NETWORK"
       base_message.merge!({
-        :ip_address => "#{@ip}"
+        :ip_address => input[:ip_address]
       })
     when "ROUTING_INFO"
       base_message.merge!({
