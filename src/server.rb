@@ -29,7 +29,7 @@ OptionParser.new do |opts|
   end
   opts.on("-id","--id id","Set ID") do |id|
     options[:guid] = id
-    puts "Target ID: #{id}"
+    puts "Set ID: #{id}"
   end
   opts.on('-h', '--help', 'Displays Help') do
 		puts opts
@@ -37,10 +37,9 @@ OptionParser.new do |opts|
 	end
 end.parse!
 
-def join_network(server,is_regular_node,target_ip)
+def join_network(server,is_regular_node,guid,target_ip)
   if is_regular_node
-    puts "hello"
-    server.udp_send(Messanger.generate_message("JOINING_NETWORK",{:ip_address => ARGV[0]}),target_ip)
+    server.udp_send(Messanger.generate_message("JOINING_NETWORK",{:ip_address => ARGV[0],:node_id => guid}),target_ip)
     puts "you aren't the node"
   else
     puts "You are the node"
@@ -77,6 +76,11 @@ class Server
             :node_id => parsed_data["node_id"],
             :ip_address => parsed_data["ip_address"]
           }
+          parsed_data.merge!({
+              "gateway_ip" => "#{@ip}",
+              "routes" => @routing_table.values
+          })
+          puts "parsed data #{parsed_data}"
           udp_send(Messanger.generate_message("ROUTING_INFO",parsed_data),parsed_data["ip_address"])
         when "PING"
           message = Messanger.generate_message("ACK",{
@@ -185,5 +189,5 @@ class Server
 end
 
 server = Server.new(ARGV[0]||'localhost', ARGV[1]||8767, options[:guid])
-join_network(server,options[:regular_node],options[:ip])
+join_network(server,options[:regular_node],options[:guid],options[:ip])
 server.run()
