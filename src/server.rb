@@ -75,6 +75,7 @@ class Server
         parsed_data = JSON.parse(data)
         case parsed_data["type"]
         when "JOINING_NETWORK"
+          notify_network(parsed_data)
           @routing_table[parsed_data["node_id"]] = {
             :node_id => parsed_data["node_id"],
             :ip_address => parsed_data["ip_address"]
@@ -99,6 +100,17 @@ class Server
     end
   end
 
+  def notify_network(new_node_data)
+    closest_node = @routing_table.keys.min_by { |x| (x.to_f - new_node_data["node_id"].to_f).abs }
+    p closest_node
+    if closest_node == @guid
+      udp_send(Messanger.generate_message("JOINING_NETWORK_RELAY",
+        {:node_id => new_node_data["node_id"]},
+        @guid),@routing_table[closest_node][:ip_address])
+      puts "This is the closest node"
+    # else
+    end
+  end
   def send_message
     Thread.new do
       loop{
@@ -141,7 +153,7 @@ class Server
   def ping_table
     Thread.new do
       loop{
-        sleep(3)
+        sleep(10.miuntes)
         @routing_table.each do |key,route|
           unless key == @guid
             route.merge!({

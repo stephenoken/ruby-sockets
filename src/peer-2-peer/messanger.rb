@@ -18,7 +18,8 @@ class Messanger
       })
     when "JOINING_NETWORK_RELAY"
       base_message.merge!({
-        :gateway_id => input["node_id"]
+				:gateway_id => base_message.delete(:node_id),
+				:node_id => input[:node_id]
       })
     when "CHAT"
       base_message.merge!({
