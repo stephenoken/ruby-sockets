@@ -31,8 +31,8 @@ class Client
     # puts "Enter Command"
     join_message = {
       :type => "JOINING_NETWORK",
-      :node_id => "#{ARGV[0]}",
-      :ip_address => "127.0.0.1"
+      :node_id => "#{ARGV[0]}"
+      # :ip_address => "127.0.0.1"
     }
     network_message = {
       :type => "JOINING_NETWORK_RELAY",

@@ -77,7 +77,7 @@ class Server
         when "JOINING_NETWORK_RELAY"
           puts "In notify_network"
           notify_network(parsed_data)
-
+          send_routing_table(parsed_data)
         when "JOINING_NETWORK"
           notify_network(parsed_data)
           @routing_table[parsed_data["node_id"]] = {
@@ -85,6 +85,8 @@ class Server
             :ip_address => parsed_data["ip_address"]
           }
           send_routing_table(parsed_data)
+				when "LEAVE_NETWORK"
+					puts @routing_table.delete(parsed_data["node_id"])
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
@@ -107,9 +109,10 @@ class Server
     udp_send(Messanger.generate_message("ROUTING_INFO",parsed_data,@guid),
     parsed_data["ip_address"])
   end
+
   def notify_network(new_node_data)
     puts "node data #{new_node_data}"
-    closest_node = @routing_table.keys.min_by { |x| (x.to_f - new_node_data["node_id"].to_f).abs }
+    closest_node = get_nearest_node(new_node_data["node_id"])
     if closest_node == @guid
       puts "This is the closest node"
     else
@@ -119,6 +122,11 @@ class Server
       @guid),@routing_table[closest_node][:ip_address])
     end
   end
+
+  def get_nearest_node(node_id)
+    return @routing_table.keys.min_by { |x| (x.to_f - node_id.to_f).abs }
+  end
+
   def send_message
     Thread.new do
       loop{
@@ -128,12 +136,16 @@ class Server
         case arguments[0]
         when "CHAT"
           get_tags(arguments[2].split(' ')).each do |tag|
-            message  = Messanger.generate_message(arguments[0],{
+            message = {
               :target_id => CustomHash.hash(tag[1..-1]),
               :tag => tag,
               :text => arguments[2]
-            },@guid)
-            puts "CHAT #{message}"
+            }
+            data  = Messanger.generate_message(arguments[0],message,@guid)
+            puts "CHAT #{data}"
+            closest_node = get_nearest_node(message[:target_id])
+            puts "The closest to send the message node #{closest_node}"
+            udp_send(data,@routing_table[closest_node][:ip_address])
             # Convert to JSON and send as a UDP to the numerically closest node
           end
         when "CHAT_RETRIEVE"
@@ -143,6 +155,12 @@ class Server
               :node_id => CustomHash.hash(arguments[2])
           },@guid)
           puts "CHAT_RETRIEVE #{message}"
+				when "LEAVE_NETWORK"
+					@routing_table.each do |_,route|
+						puts "Hello"
+						puts "Route ip_address: #{route[:ip_address]}"
+						udp_send(Messanger.generate_message("LEAVE_NETWORK",nil,@guid),route[:ip_address])
+					end
         end
       }
     end
@@ -187,6 +205,9 @@ class Server
 
   def udp_send(data, ip_address)
     puts ">-- Sending data to #{ip_address} --> #{data}"
+		if ip_address == nil
+			puts "The ip is empty now hopping message to nearest node"
+		end
     sock = UDPSocket.new
     sock.send(data, 0, ip_address, 8767)
     sock.close
