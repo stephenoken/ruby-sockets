@@ -39,7 +39,7 @@ end.parse!
 
 def join_network(server,is_regular_node,guid,target_ip)
   if is_regular_node
-    server.udp_send(Messanger.generate_message("JOINING_NETWORK",{:ip_address => ARGV[0],:node_id => guid}),target_ip)
+    server.udp_send(Messanger.generate_message("JOINING_NETWORK",{:ip_address => ARGV[0],:node_id => guid}),target_ip,_)
     puts "you aren't the node"
   else
     puts "You are the node"
@@ -80,13 +80,13 @@ class Server
               "gateway_ip" => "#{@ip}",
               "routes" => @routing_table.values
           })
-          puts "parsed data #{parsed_data}"
-          udp_send(Messanger.generate_message("ROUTING_INFO",parsed_data),parsed_data["ip_address"])
+          udp_send(Messanger.generate_message("ROUTING_INFO",parsed_data,@guid),
+          parsed_data["ip_address"])
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
               :ip_address => @ip
-          })
+          },@guid)
           puts "ACK response: #{message}"
           udp_send(message,parsed_data["ip_address"])
         when "ACK"
@@ -109,7 +109,7 @@ class Server
               :target_id => CustomHash.hash(tag[1..-1]),
               :tag => tag,
               :text => arguments[2]
-            })
+            },@guid)
             puts "CHAT #{message}"
             # Convert to JSON and send as a UDP to the numerically closest node
           end
@@ -118,7 +118,7 @@ class Server
           message = Messanger.generate_message(arguments[0],{
               :tag => arguments[2],
               :node_id => CustomHash.hash(arguments[2])
-          })
+          },@guid)
           puts "CHAT_RETRIEVE #{message}"
         end
       }
@@ -140,7 +140,7 @@ class Server
       loop{
         sleep(10.minutes)
         @routing_table.each do |_,route|
-          data = Messanger.generate_message("PING",route)
+          data = Messanger.generate_message("PING",route,@guid)
           puts "route #{route}"
           udp_send(data,route[:ip_address])
           @are_pings_ack[route[:node_id]]

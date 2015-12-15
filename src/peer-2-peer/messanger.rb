@@ -1,9 +1,9 @@
 require "json"
 class Messanger
-	def self.generate_message(message_type, input)
+	def self.generate_message(message_type, input, guid)
     base_message = {
       :type => message_type,
-      :node_id => "#{@guid}"
+      :node_id => guid
     }
     case message_type
     when "JOINING_NETWORK"
