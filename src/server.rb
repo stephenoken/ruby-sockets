@@ -74,18 +74,17 @@ class Server
         puts "From client #{data}"
         parsed_data = JSON.parse(data)
         case parsed_data["type"]
+        when "JOINING_NETWORK_RELAY"
+          puts "In notify_network"
+          notify_network(parsed_data)
+
         when "JOINING_NETWORK"
           notify_network(parsed_data)
           @routing_table[parsed_data["node_id"]] = {
             :node_id => parsed_data["node_id"],
             :ip_address => parsed_data["ip_address"]
           }
-          parsed_data.merge!({
-              "gateway_ip" => "#{@ip}",
-              "routes" => @routing_table.values
-          })
-          udp_send(Messanger.generate_message("ROUTING_INFO",parsed_data,@guid),
-          parsed_data["ip_address"])
+          send_routing_table(parsed_data)
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
@@ -100,15 +99,24 @@ class Server
     end
   end
 
+  def send_routing_table(parsed_data)
+    parsed_data.merge!({
+        "gateway_ip" => "#{@ip}",
+        "routes" => @routing_table.values
+    })
+    udp_send(Messanger.generate_message("ROUTING_INFO",parsed_data,@guid),
+    parsed_data["ip_address"])
+  end
   def notify_network(new_node_data)
+    puts "node data #{new_node_data}"
     closest_node = @routing_table.keys.min_by { |x| (x.to_f - new_node_data["node_id"].to_f).abs }
-    p closest_node
     if closest_node == @guid
-      udp_send(Messanger.generate_message("JOINING_NETWORK_RELAY",
-        {:node_id => new_node_data["node_id"]},
-        @guid),@routing_table[closest_node][:ip_address])
       puts "This is the closest node"
-    # else
+    else
+      puts "The closest node #{closest_node}"
+      udp_send(Messanger.generate_message("JOINING_NETWORK_RELAY",
+      {:node_id => new_node_data["node_id"]},
+      @guid),@routing_table[closest_node][:ip_address])
     end
   end
   def send_message
@@ -182,6 +190,7 @@ class Server
     sock = UDPSocket.new
     sock.send(data, 0, ip_address, 8767)
     sock.close
+    puts "Sent...."
   end
   def run
     puts "Server running on : #{@ip}:#{@port}"
