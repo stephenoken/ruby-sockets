@@ -37,7 +37,7 @@ class Messanger
       base_message.merge!({
         :target_id => input[:node_id],
         :sender_id => base_message.delete(:node_id),
-        :ip_address => "#{@ip}"
+        :ip_address => input[:sender_ip]
       })
     when "ACK"
       base_message.merge!({

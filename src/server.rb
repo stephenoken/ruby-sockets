@@ -141,9 +141,12 @@ class Server
   def ping_table
     Thread.new do
       loop{
-        sleep(10.minutes)
+        sleep(3)
         @routing_table.each do |key,route|
           unless key == @guid
+            route.merge!({
+              :sender_ip => @ip
+            })
             data = Messanger.generate_message("PING",route,@guid)
             puts "route #{route}"
             udp_send(data,route[:ip_address])
