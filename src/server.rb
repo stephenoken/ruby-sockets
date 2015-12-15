@@ -139,18 +139,20 @@ class Server
     Thread.new do
       loop{
         sleep(10.minutes)
-        @routing_table.each do |_,route|
-          data = Messanger.generate_message("PING",route,@guid)
-          puts "route #{route}"
-          udp_send(data,route[:ip_address])
-          @are_pings_ack[route[:node_id]]
-          sleep(30)
-          if @are_pings_ack[route[:node_id]]
-            @are_pings_ack[route[:node_id]] = false
-            puts "Acknowldged!!!"
-          else
-            puts "The node is dead long live the node :("
-            @routing_table.delete(route[:node_id])
+        @routing_table.each do |key,route|
+          unless key == @guid
+            data = Messanger.generate_message("PING",route,@guid)
+            puts "route #{route}"
+            udp_send(data,route[:ip_address])
+            @are_pings_ack[route[:node_id]]
+            sleep(30)
+            if @are_pings_ack[route[:node_id]]
+              @are_pings_ack[route[:node_id]] = false
+              puts "Acknowldged!!!"
+            else
+              puts "The node is dead long live the node :("
+              @routing_table.delete(route[:node_id])
+            end
           end
         end
       }
