@@ -39,7 +39,11 @@ end.parse!
 
 def join_network(server,is_regular_node,guid,target_ip)
   if is_regular_node
-    server.udp_send(Messanger.generate_message("JOINING_NETWORK",{:ip_address => ARGV[0],:node_id => guid}),target_ip,_)
+    server.udp_send(Messanger.generate_message("JOINING_NETWORK",
+    {
+      :ip_address => ARGV[0],
+      :node_id => guid
+    },nil),target_ip)
     puts "you aren't the node"
   else
     puts "You are the node"
