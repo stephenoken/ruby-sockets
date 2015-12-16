@@ -100,6 +100,7 @@ class Server
         when "CHAT_RETRIEVE"
           process_message(parsed_data,"node_id")
         when "PING"
+          puts "In recieve_message #{data}"
           process_message(parsed_data,"target_id")
           # message = Messanger.generate_message("ACK",{
           #     :node_id => parsed_data["target_id"],
@@ -124,6 +125,7 @@ class Server
       when "CHAT_RETRIEVE"
         process_chat_retrieve(parsed_data)
       when "PING"
+        puts "In process_message #{data}"
         process_ping(parsed_data)
       when "ACK"
         puts "Work in progress"
@@ -142,7 +144,7 @@ class Server
   end
 
   def process_ping(parsed_data)
-    puts "Before process_ping #{parsed_data}"
+    puts "In process_ping #{parsed_data}"
     data = Messanger.generate_message("ACK",{
       :node_id => parsed_data["target_id"],
       :ip_address => parsed_data["ip_address"]
