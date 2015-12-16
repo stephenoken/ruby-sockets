@@ -125,7 +125,7 @@ class Server
       when "CHAT_RETRIEVE"
         process_chat_retrieve(parsed_data)
       when "PING"
-        puts "In process_message #{data}"
+        puts "In process_message #{parsed_data}"
         process_ping(parsed_data)
       when "ACK"
         puts "Work in progress"
