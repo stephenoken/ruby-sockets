@@ -28,6 +28,11 @@ class Messanger
           :tag => input[:tag],
           :text => input[:text]
       })
+		when "CHAT_ACK"
+			base_message.merge!({
+					:node_id => input[:node_id],
+					:tag => input[:tag]
+			})
     when "CHAT_RETRIEVE"
       base_message.merge!({
           :tag => input[:tag],

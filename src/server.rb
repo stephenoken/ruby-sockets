@@ -91,22 +91,7 @@ class Server
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
         when "CHAT"
-          if get_nearest_node(parsed_data["target_id"]) == @guid
-            puts "It has arrived at the destination"
-            if   @hashtags[parsed_data["target_id"]][:tag] == nil
-              @hashtags[parsed_data["target_id"]] = {
-                :tag => parsed_data["tag"],
-                :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
-              }
-            else
-              @hashtags[parsed_data["target_id"]].merge!({
-                :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
-              })
-            end
-            puts   @hashtags
-          else
-            puts "The search continues..."
-          end
+          send_chat_message(parsed_data)
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
@@ -121,6 +106,39 @@ class Server
     end
   end
 
+  def send_chat_message(parsed_data)
+    if get_nearest_node(parsed_data["target_id"]) == @guid
+      puts "It has arrived at the destination"
+      if   @hashtags[parsed_data["target_id"]][:tag] == nil
+        @hashtags[parsed_data["target_id"]] = {
+          :tag => parsed_data["tag"],
+          :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+        }
+      else
+        @hashtags[parsed_data["target_id"]].merge!({
+          :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+        })
+      end
+      ack_msg = {
+      :node_id => parsed_data["sender_id"],
+      :tag => parsed_data["tag"]
+      }
+      chat_ack = Messanger.generate_message("CHAT_ACK",ack_msg, @guid)
+      puts "CHAT_ACK --> #{chat_ack}"
+      puts  "Hashtags --> #{@hashtags}"
+      udp_send(chat_ack,@routing_table[get_nearest_node(ack_msg[:node_id])][:ip_address])
+    else
+      hop_message(parsed_data)
+    end
+  end
+
+  def hop_message(parsed_data)
+    puts "The search continues..."
+    puts "parsed_data ---<>--- #{parsed_data}"
+    puts "parsed_data ---<>--- #{JSON.generate(parsed_data)}"
+    udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data["target_id"])][:ip_address])
+
+  end
   def send_routing_table(parsed_data)
     parsed_data.merge!({
         "gateway_ip" => "#{@ip}",
