@@ -142,12 +142,12 @@ class Server
   end
 
   def process_ping(parsed_data)
+    puts "Before process_ping #{parsed_data}"
     data = Messanger.generate_message("ACK",{
       :node_id => parsed_data["target_id"],
       :ip_address => parsed_data["ip_address"]
     },@guid)
     puts "ACK --> #{data}"
-
     udp_send(data,parsed_data["ip_address"])
   end
 
@@ -272,7 +272,7 @@ class Server
       if route[:node_id] != @guid
         route.merge!({:node_id => suspect_node,:sender_ip => @ip})
         data = Messanger.generate_message("PING",route,@guid)
-        puts data
+        puts "Ping information #{data}"
         udp_send(data, route[:ip_address])
         sleep 5
         if @are_pings_ack[suspect_node]
