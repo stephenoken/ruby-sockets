@@ -94,8 +94,11 @@ class Server
           puts "Routing table  #{@routing_table}"
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
+          puts "Routing table  #{@routing_table}"
         when "CHAT"
-          send_chat_message(parsed_data)
+          process_message(parsed_data)
+        when "CHAT_RETRIEVE"
+          process_message(parsed_data)
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
@@ -110,36 +113,39 @@ class Server
     end
   end
 
-  def send_chat_message(parsed_data)
+  def process_message(parsed_data)
     if get_nearest_node(parsed_data["target_id"]) == @guid
       puts "It has arrived at the destination"
-      if   @hashtags[parsed_data["target_id"]][:tag] == nil
-        @hashtags[parsed_data["target_id"]] = {
-          :tag => parsed_data["tag"],
-          :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
-        }
-      else
-        @hashtags[parsed_data["target_id"]].merge!({
-          :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
-        })
-      end
-      ack_msg = {
-      :node_id => parsed_data["sender_id"],
-      :tag => parsed_data["tag"]
-      }
-      chat_ack = Messanger.generate_message("CHAT_ACK",ack_msg, @guid)
-      puts "CHAT_ACK --> #{chat_ack}"
-      puts  "Hashtags --> #{@hashtags}"
-      udp_send(chat_ack,@routing_table[get_nearest_node(ack_msg[:node_id])][:ip_address])
+      process_chat(parsed_data)
     else
       hop_message(parsed_data,"target_id")
     end
   end
 
+  def process_chat(parsed_data)
+    if   @hashtags[parsed_data["target_id"]][:tag] == nil
+      @hashtags[parsed_data["target_id"]] = {
+        :tag => parsed_data["tag"],
+        :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+      }
+    else
+      @hashtags[parsed_data["target_id"]].merge!({
+        :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+      })
+    end
+    ack_msg = {
+    :node_id => parsed_data["sender_id"],
+    :tag => parsed_data["tag"]
+    }
+    chat_ack = Messanger.generate_message("CHAT_ACK",ack_msg, @guid)
+    puts "CHAT_ACK --> #{chat_ack}"
+    puts  "Hashtags --> #{@hashtags}"
+    udp_send(chat_ack,@routing_table[get_nearest_node(ack_msg[:node_id])][:ip_address])
+  end
+
   def hop_message(parsed_data,key)
     puts "The search continues..."
     udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
-
   end
   def send_routing_table(parsed_data)
     notify_network(parsed_data)
@@ -200,6 +206,7 @@ class Server
               :node_id => CustomHash.hash(arguments[2])
           }
           data = Messanger.generate_message(arguments[0],message,@guid)
+          udp_send(data,@routing_table[get_nearest_node(message[:node_id])][:ip_address])
           puts "CHAT_RETRIEVE #{data}"
 				when "LEAVE_NETWORK"
 					@routing_table.each do |_,route|
