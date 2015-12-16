@@ -145,6 +145,7 @@ class Server
 
   def process_ping(parsed_data)
     puts "In process_ping #{parsed_data}"
+    parsed_data["ip_address"] = @ip
     data = Messanger.generate_message("ACK",{
       :node_id => parsed_data["target_id"],
       :ip_address => parsed_data["ip_address"]
@@ -190,7 +191,6 @@ class Server
   def hop_message(parsed_data,key)
     puts "The search continues..."
     if parsed_data["type"] == "PING"
-      parsed_data["ip_address"] = @ip
       process_ping(parsed_data)
     end
     udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
