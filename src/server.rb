@@ -99,6 +99,7 @@ class Server
         when "CHAT_RETRIEVE"
           process_message(parsed_data,"node_id")
         when "PING"
+          process_message(parsed_data,"target_id")
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
               :ip_address => @ip
@@ -119,12 +120,18 @@ class Server
       when "CHAT"
         process_chat(parsed_data)
       when "CHAT_RETRIEVE"
-        puts "A work in orgress"
         process_chat_retrieve(parsed_data)
+      when "PING"
+        puts "Work in prgress"
+        process_ping(parsed_data)
       end
     else
       hop_message(parsed_data,key)
     end
+  end
+
+  def process_ping(parsed_data)
+
   end
 
   def process_chat_retrieve(parsed_data)
@@ -163,6 +170,9 @@ class Server
 
   def hop_message(parsed_data,key)
     puts "The search continues..."
+    if parsed_data["type"] == "PING"
+      parsed_data["ip_address"] = @ip
+    end
     udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
   end
   def send_routing_table(parsed_data)
@@ -215,7 +225,7 @@ class Server
             closest_node = get_nearest_node(message[:target_id])
             puts "The closest to send the message node #{closest_node}"
             udp_send(data,@routing_table[closest_node][:ip_address])
-            # Convert to JSON and send as a UDP to the numerically closest node
+            ping_mode(message[:target_id])
           end
         when "CHAT_RETRIEVE"
           arguments[2] = arguments[2].downcase
@@ -228,13 +238,29 @@ class Server
           puts "CHAT_RETRIEVE #{data}"
 				when "LEAVE_NETWORK"
 					@routing_table.each do |_,route|
-						puts "Hello"
 						puts "Route ip_address: #{route[:ip_address]}"
 						udp_send(Messanger.generate_message("LEAVE_NETWORK",nil,@guid),route[:ip_address])
 					end
         end
       }
     end
+  end
+
+  def ping_mode(suspect_node)
+    Thread.new{
+      sleep 5
+      puts "No Acknowldgement :("
+      route = @routing_table[get_nearest_node(suspect_node)]
+      if route[:node_id] = @guid
+        route.merge!({:node_id => suspect_node,:sender_ip => @ip})
+        data = Messanger.generate_message("PING",route,@guid)
+        puts data
+        udp_send(data, route[:ip_address])
+        unless @are_pings_ack[suspect_node]
+          puts "The node is dead"
+        end
+      end
+    }
   end
 
   def get_tags(words)
