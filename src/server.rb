@@ -128,15 +128,13 @@ class Server
       puts  "Hashtags --> #{@hashtags}"
       udp_send(chat_ack,@routing_table[get_nearest_node(ack_msg[:node_id])][:ip_address])
     else
-      hop_message(parsed_data)
+      hop_message(parsed_data,"target_id")
     end
   end
 
-  def hop_message(parsed_data)
+  def hop_message(parsed_data,key)
     puts "The search continues..."
-    puts "parsed_data ---<>--- #{parsed_data}"
-    puts "parsed_data ---<>--- #{JSON.generate(parsed_data)}"
-    udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data["target_id"])][:ip_address])
+    udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
 
   end
   def send_routing_table(parsed_data)
@@ -244,7 +242,7 @@ class Server
   def udp_send(data, ip_address)
     puts ">-- Sending data to #{ip_address} --> #{data}"
 		if ip_address == nil
-			puts "The ip is empty now hopping message to nearest node"
+			puts "The ip address is empty now hopping message to nearest node"
 		end
     sock = UDPSocket.new
     sock.send(data, 0, ip_address, 8767)
