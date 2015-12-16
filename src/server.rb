@@ -152,6 +152,7 @@ class Server
     },@guid)
     puts "ACK --> #{data}"
     udp_send(data,ack_destination)
+    ping_mode(get_nearest_node(parsed_data["target_id"]))
   end
 
   def process_chat_retrieve(parsed_data)
