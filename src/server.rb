@@ -55,6 +55,9 @@ class Server
     @guid = guid
     @routing_table = Hash.new
     @are_pings_ack = Hash.new(false)
+    @hashtags = Hash.new({
+        :response => Array.new
+    })
     # Each routing table conatains the host node
     @routing_table[@guid] = {
         :node_id => @guid,
@@ -87,6 +90,23 @@ class Server
           send_routing_table(parsed_data)
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
+        when "CHAT"
+          if get_nearest_node(parsed_data["target_id"]) == @guid
+            puts "It has arrived at the destination"
+            if   @hashtags[parsed_data["target_id"]][:tag] == nil
+              @hashtags[parsed_data["target_id"]] = {
+                :tag => parsed_data["tag"],
+                :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+              }
+            else
+              @hashtags[parsed_data["target_id"]].merge!({
+                :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+              })
+            end
+            puts   @hashtags
+          else
+            puts "The search continues..."
+          end
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
@@ -138,7 +158,7 @@ class Server
           get_tags(arguments[2].split(' ')).each do |tag|
             message = {
               :target_id => CustomHash.hash(tag[1..-1]),
-              :tag => tag,
+              :tag => tag[1..-1],
               :text => arguments[2]
             }
             data  = Messanger.generate_message(arguments[0],message,@guid)
