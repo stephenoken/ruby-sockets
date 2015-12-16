@@ -121,14 +121,27 @@ class Server
         process_chat(parsed_data)
       when "CHAT_RETRIEVE"
         puts "A work in orgress"
+        process_chat_retrieve(parsed_data)
       end
     else
       hop_message(parsed_data,key)
     end
   end
 
+  def process_chat_retrieve(parsed_data)
+    puts "Parsed --> #{parsed_data}"
+    puts "Messages --> #{@hashtags[parsed_data["target_id"]]}"
+    hash_chat_resp = {
+      :node_id => parsed_data["sender_id"],
+      :tag => parsed_data["tag"],
+      :response => @hashtags[parsed_data["target_id"]]
+    }
+    chat_resp = Messanger.generate_message("CHAT_RESPONSE",hash_chat_resp,@guid)
+    puts "Chat response #{chat_resp}"
+    udp_send(chat_resp,@routing_table[get_nearest_node(hash_chat_resp[:node_id])][:ip_address])
+  end
   def process_chat(parsed_data)
-    if   @hashtags[parsed_data["target_id"]][:tag] == nil
+    if @hashtags[parsed_data["target_id"]][:tag] == nil
       @hashtags[parsed_data["target_id"]] = {
         :tag => parsed_data["tag"],
         :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})

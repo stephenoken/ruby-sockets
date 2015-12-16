@@ -39,6 +39,13 @@ class Messanger
           :node_id => input[:node_id],
           :sender_id => base_message.delete(:node_id)
       })
+		when "CHAT_RESPONSE"
+			base_message.merge!({
+					:tag => input[:tag],
+					:sender_id => base_message.delete(:node_id),
+					:node_id => input[:node_id],
+					:response => input[:response]
+			})
     when "PING"
       base_message.merge!({
         :target_id => input[:node_id],
