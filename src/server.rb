@@ -96,9 +96,9 @@ class Server
 					puts @routing_table.delete(parsed_data["node_id"])
           puts "Routing table  #{@routing_table}"
         when "CHAT"
-          process_message(parsed_data)
+          process_message(parsed_data,"target_id")
         when "CHAT_RETRIEVE"
-          process_message(parsed_data)
+          process_message(parsed_data,"node_id")
         when "PING"
           message = Messanger.generate_message("ACK",{
               :node_id => parsed_data["target_id"],
@@ -113,12 +113,17 @@ class Server
     end
   end
 
-  def process_message(parsed_data)
-    if get_nearest_node(parsed_data["target_id"]) == @guid
+  def process_message(parsed_data,key)
+    if get_nearest_node(parsed_data[key]) == @guid
       puts "It has arrived at the destination"
-      process_chat(parsed_data)
+      case parsed_data["type"]
+      when "CHAT"
+        process_chat(parsed_data)
+      when "CHAT_RETRIEVE"
+        puts "A work in orgress"
+      end
     else
-      hop_message(parsed_data,"target_id")
+      hop_message(parsed_data,key)
     end
   end
 
