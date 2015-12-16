@@ -13,7 +13,7 @@ class Messanger
     when "ROUTING_INFO"
       base_message.merge!({
         :node_id => input["node_id"],
-        :ip_address => input["ip_address"],
+        :ip_address => input["gateway_ip"],
         :route_table => input["routes"]
       })
     when "JOINING_NETWORK_RELAY"

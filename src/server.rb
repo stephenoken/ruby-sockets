@@ -82,12 +82,12 @@ class Server
           notify_network(parsed_data)
           send_routing_table(parsed_data)
         when "JOINING_NETWORK"
-          notify_network(parsed_data)
-          @routing_table[parsed_data["node_id"]] = {
-            :node_id => parsed_data["node_id"],
-            :ip_address => parsed_data["ip_address"]
-          }
           send_routing_table(parsed_data)
+        when "ROUTING_INFO"
+          puts "Hello"
+          parsed_data["route_table"].each  do |route|
+            puts "Route #{route}"
+          end
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
         when "CHAT"
@@ -138,6 +138,11 @@ class Server
 
   end
   def send_routing_table(parsed_data)
+    notify_network(parsed_data)
+    @routing_table[parsed_data["node_id"]] = {
+      :node_id => parsed_data["node_id"],
+      :ip_address => parsed_data["ip_address"]
+    }
     parsed_data.merge!({
         "gateway_ip" => "#{@ip}",
         "routes" => @routing_table.values
@@ -186,11 +191,12 @@ class Server
           end
         when "CHAT_RETRIEVE"
           arguments[2] = arguments[2].downcase
-          message = Messanger.generate_message(arguments[0],{
+          message = {
               :tag => arguments[2],
               :node_id => CustomHash.hash(arguments[2])
-          },@guid)
-          puts "CHAT_RETRIEVE #{message}"
+          }
+          data = Messanger.generate_message(arguments[0],message,@guid)
+          puts "CHAT_RETRIEVE #{data}"
 				when "LEAVE_NETWORK"
 					@routing_table.each do |_,route|
 						puts "Hello"
