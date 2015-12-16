@@ -55,6 +55,7 @@ class Server
     @guid = guid
     @routing_table = Hash.new
     @are_pings_ack = Hash.new(false)
+    @are_chat_msg_ack = Hash.new(false)
     @hashtags = Hash.new({
         :response => Array.new
     })
@@ -100,13 +101,14 @@ class Server
           process_message(parsed_data,"node_id")
         when "PING"
           process_message(parsed_data,"target_id")
-          message = Messanger.generate_message("ACK",{
-              :node_id => parsed_data["target_id"],
-              :ip_address => @ip
-          },@guid)
-          puts "ACK response: #{message}"
-          udp_send(message,parsed_data["ip_address"])
+          # message = Messanger.generate_message("ACK",{
+          #     :node_id => parsed_data["target_id"],
+          #     :ip_address => @ip
+          # },@guid)
+          # puts "ACK response: #{message}"
+          # udp_send(message,parsed_data["ip_address"])
         when "ACK"
+          process_message(parsed_data,"node_id")
           @are_pings_ack[parsed_data["node_id"]] = true
         end
       }
@@ -122,16 +124,31 @@ class Server
       when "CHAT_RETRIEVE"
         process_chat_retrieve(parsed_data)
       when "PING"
-        puts "Work in prgress"
         process_ping(parsed_data)
+      when "ACK"
+        puts "Work in progress"
+        process_ack(parsed_data)
       end
     else
       hop_message(parsed_data,key)
     end
   end
 
-  def process_ping(parsed_data)
+  def process_ack(parsed_data)
+    puts "In ack"
+    living_route = @routing_table.select{|_,value| value[:ip_address] == parsed_data["ip_address"]}
+    puts "Routing table in ACK #{living_route}"
+    @are_pings_ack[living_route[:node_id]] = true
+  end
 
+  def process_ping(parsed_data)
+    data = Messanger.generate_message("ACK",{
+      :node_id => parsed_data["target_id"],
+      :ip_address => parsed_data["ip_address"]
+    },@guid)
+    puts "ACK --> #{data}"
+
+    udp_send(data,parsed_data["ip_address"])
   end
 
   def process_chat_retrieve(parsed_data)
@@ -172,6 +189,7 @@ class Server
     puts "The search continues..."
     if parsed_data["type"] == "PING"
       parsed_data["ip_address"] = @ip
+      process_ping(parsed_data)
     end
     udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
   end
@@ -251,13 +269,18 @@ class Server
       sleep 5
       puts "No Acknowldgement :("
       route = @routing_table[get_nearest_node(suspect_node)]
-      if route[:node_id] = @guid
+      if route[:node_id] != @guid
         route.merge!({:node_id => suspect_node,:sender_ip => @ip})
         data = Messanger.generate_message("PING",route,@guid)
         puts data
         udp_send(data, route[:ip_address])
-        unless @are_pings_ack[suspect_node]
+        sleep 5
+        if @are_pings_ack[suspect_node]
+          puts "The node is alive"
+          @are_pings_ack[suspect_node] = false
+        else
           puts "The node is dead"
+          @routing_table.delete(route[:node_id])
         end
       end
     }
