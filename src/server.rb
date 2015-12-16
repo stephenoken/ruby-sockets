@@ -67,7 +67,6 @@ class Server
     @udp_server.bind(@ip,@port)
     recieve_message
     send_message
-    ping_table
   end
 
   def recieve_message
@@ -130,25 +129,26 @@ class Server
 
   def process_chat_retrieve(parsed_data)
     puts "Parsed --> #{parsed_data}"
-    puts "Messages --> #{@hashtags[parsed_data["target_id"]]}"
+    puts "Messages --> #{@hashtags[CustomHash.hash(parsed_data["tag"])]}"
     hash_chat_resp = {
       :node_id => parsed_data["sender_id"],
       :tag => parsed_data["tag"],
-      :response => @hashtags[parsed_data["target_id"]]
+      :response => @hashtags[CustomHash.hash(parsed_data["tag"])][:response]
     }
     chat_resp = Messanger.generate_message("CHAT_RESPONSE",hash_chat_resp,@guid)
     puts "Chat response #{chat_resp}"
     udp_send(chat_resp,@routing_table[get_nearest_node(hash_chat_resp[:node_id])][:ip_address])
   end
+
   def process_chat(parsed_data)
-    if @hashtags[parsed_data["target_id"]][:tag] == nil
-      @hashtags[parsed_data["target_id"]] = {
+    if @hashtags[CustomHash.hash(parsed_data["tag"])].empty?
+      @hashtags[CustomHash.hash(parsed_data["tag"])] = {
         :tag => parsed_data["tag"],
-        :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+        :response => @hashtags[CustomHash.hash(parsed_data["tag"])][:response].push({:text => parsed_data["text"]})
       }
     else
-      @hashtags[parsed_data["target_id"]].merge!({
-        :response => @hashtags[parsed_data["target_id"]][:response].push({:text => parsed_data["text"]})
+      @hashtags[CustomHash.hash(parsed_data["tag"])].merge!({
+        :response => @hashtags[CustomHash.hash(parsed_data["tag"])][:response].push({:text => parsed_data["text"]})
       })
     end
     ack_msg = {
@@ -245,33 +245,6 @@ class Server
       end
     end
     return tags
-  end
-
-  def ping_table
-    Thread.new do
-      loop{
-        sleep(10.miuntes)
-        @routing_table.each do |key,route|
-          unless key == @guid
-            route.merge!({
-              :sender_ip => @ip
-            })
-            data = Messanger.generate_message("PING",route,@guid)
-            puts "route #{route}"
-            udp_send(data,route[:ip_address])
-            @are_pings_ack[route[:node_id]]
-            sleep(30)
-            if @are_pings_ack[route[:node_id]]
-              @are_pings_ack[route[:node_id]] = false
-              puts "Acknowldged!!!"
-            else
-              puts "The node is dead long live the node :("
-              @routing_table.delete(route[:node_id])
-            end
-          end
-        end
-      }
-    end
   end
 
   def udp_send(data, ip_address)
