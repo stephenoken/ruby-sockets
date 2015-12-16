@@ -269,7 +269,7 @@ class Server
 
   def ping_mode(suspect_node)
     Thread.new{
-      sleep 5
+      sleep 30
       puts "No Acknowldgement :("
       route = @routing_table[get_nearest_node(suspect_node)]
       if route[:node_id] != @guid
@@ -277,7 +277,7 @@ class Server
         data = Messanger.generate_message("PING",route,@guid)
         puts "Ping information #{data}"
         udp_send(data, route[:ip_address])
-        sleep 5
+        sleep 30
         if @are_pings_ack[suspect_node]
           puts "The node is alive"
           @are_pings_ack[suspect_node] = false
