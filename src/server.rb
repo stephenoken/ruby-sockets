@@ -145,13 +145,13 @@ class Server
 
   def process_ping(parsed_data)
     puts "In process_ping #{parsed_data}"
-    parsed_data["ip_address"] = @ip
+    ack_destination = parsed_data["ip_address"]
     data = Messanger.generate_message("ACK",{
       :node_id => parsed_data["target_id"],
       :ip_address => parsed_data["ip_address"]
     },@guid)
     puts "ACK --> #{data}"
-    udp_send(data,parsed_data["ip_address"])
+    udp_send(data,ack_destination)
   end
 
   def process_chat_retrieve(parsed_data)
