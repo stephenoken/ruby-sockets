@@ -84,10 +84,14 @@ class Server
         when "JOINING_NETWORK"
           send_routing_table(parsed_data)
         when "ROUTING_INFO"
-          puts "Hello"
           parsed_data["route_table"].each  do |route|
             puts "Route #{route}"
+            @routing_table[route["node_id"]] = {
+              :node_id => route["node_id"],
+              :ip_address => route["ip_address"]
+            }
           end
+          puts "Routing table  #{@routing_table}"
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
         when "CHAT"
