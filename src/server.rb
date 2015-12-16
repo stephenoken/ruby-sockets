@@ -148,7 +148,7 @@ class Server
     ack_destination = parsed_data["ip_address"]
     data = Messanger.generate_message("ACK",{
       :node_id => parsed_data["target_id"],
-      :ip_address => parsed_data["ip_address"]
+      :ip_address => @ip
     },@guid)
     puts "ACK --> #{data}"
     udp_send(data,ack_destination)
