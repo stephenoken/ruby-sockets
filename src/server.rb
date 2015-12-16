@@ -152,7 +152,6 @@ class Server
     },@guid)
     puts "ACK --> #{data}"
     udp_send(data,ack_destination)
-    ping_mode(get_nearest_node(parsed_data["target_id"]))
   end
 
   def process_chat_retrieve(parsed_data)
@@ -193,6 +192,7 @@ class Server
     puts "The search continues..."
     if parsed_data["type"] == "PING"
       process_ping(parsed_data)
+      ping_mode(get_nearest_node(parsed_data["target_id"]))
     end
     udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
   end
