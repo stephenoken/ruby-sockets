@@ -332,7 +332,7 @@ class Server
         else
           puts "The node is dead"
           puts "Node Id = #{route[:node_id]} and #{@routing_table}"
-          @routing_table.delete(route[:node_id])
+          _ = @routing_table.delete(route[:node_id])
           puts "Node Id = #{route[:node_id]} and #{@routing_table}"
         end
       end
