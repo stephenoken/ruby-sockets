@@ -55,7 +55,7 @@ class Server
     @guid = guid
     @routing_table = Hash.new
     @are_pings_ack = Hash.new(false)
-    @are_chat_msg_ack = Hash.new(false)
+    @is_chat_ack = Hash.new(false)
     @hashtags = Hash.new({
         :response => Array.new
     })
@@ -99,6 +99,10 @@ class Server
           process_message(parsed_data,"target_id")
         when "CHAT_RETRIEVE"
           process_message(parsed_data,"node_id")
+        when "ACK_CHAT"
+          process_message(parsed_data,"node_id")
+        when "CHAT_RESPONSE"
+          process_message(parsed_data,"node_id")
         when "PING"
           puts "In recieve_message #{data}"
           process_message(parsed_data,"target_id")
@@ -122,6 +126,10 @@ class Server
       case parsed_data["type"]
       when "CHAT"
         process_chat(parsed_data)
+      when "ACK_CHAT"
+        process_ack_message(parsed_data)
+      when "CHAT_RESPONSE"
+        process_ack_message(parsed_data)
       when "CHAT_RETRIEVE"
         process_chat_retrieve(parsed_data)
       when "PING"
@@ -134,6 +142,11 @@ class Server
     else
       hop_message(parsed_data,key)
     end
+  end
+
+  def process_ack_message(parsed_data)
+      @is_chat_ack[parsed_data["tag"]] = true
+      puts "process_ack_message #{@is_chat_ack}"
   end
 
   def process_ack(parsed_data)
@@ -182,8 +195,8 @@ class Server
     :node_id => parsed_data["sender_id"],
     :tag => parsed_data["tag"]
     }
-    chat_ack = Messanger.generate_message("CHAT_ACK",ack_msg, @guid)
-    puts "CHAT_ACK --> #{chat_ack}"
+    chat_ack = Messanger.generate_message("ACK_CHAT",ack_msg, @guid)
+    puts "ACK_CHAT --> #{chat_ack}"
     puts  "Hashtags --> #{@hashtags}"
     udp_send(chat_ack,@routing_table[get_nearest_node(ack_msg[:node_id])][:ip_address])
   end
@@ -246,7 +259,7 @@ class Server
             closest_node = get_nearest_node(message[:target_id])
             puts "The closest to send the message node #{closest_node}"
             udp_send(data,@routing_table[closest_node][:ip_address])
-            ping_mode(message[:target_id])
+            wait_for_ack_msg(message[:tag],message[:target_id])
           end
         when "CHAT_RETRIEVE"
           arguments[2] = arguments[2].downcase
@@ -257,6 +270,7 @@ class Server
           data = Messanger.generate_message(arguments[0],message,@guid)
           udp_send(data,@routing_table[get_nearest_node(message[:node_id])][:ip_address])
           puts "CHAT_RETRIEVE #{data}"
+          wait_for_ack_msg(message[:tag],message[:node_id])
 				when "LEAVE_NETWORK"
 					@routing_table.each do |_,route|
 						puts "Route ip_address: #{route[:ip_address]}"
@@ -267,9 +281,17 @@ class Server
     end
   end
 
+  def wait_for_ack_msg(tag, target)
+    Thread.new {
+      sleep 30
+      unless @is_chat_ack[tag] # TODO: Add process chat_ack
+        ping_mode(target)
+        @is_chat_ack[tag] = false
+      end
+    }
+  end
   def ping_mode(suspect_node)
     Thread.new{
-      sleep 30
       puts "No Acknowldgement :("
       route = @routing_table[get_nearest_node(suspect_node)]
       if route[:node_id] != @guid

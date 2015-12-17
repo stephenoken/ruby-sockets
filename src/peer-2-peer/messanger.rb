@@ -28,7 +28,7 @@ class Messanger
           :tag => input[:tag],
           :text => input[:text]
       })
-		when "CHAT_ACK"
+		when "ACK_CHAT"
 			base_message.merge!({
 					:node_id => input[:node_id],
 					:tag => input[:tag]
