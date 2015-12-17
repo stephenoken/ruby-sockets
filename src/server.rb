@@ -312,8 +312,8 @@ class Server
       sleep 30
       unless @is_chat_ack[tag] # TODO: Add process chat_ack
         ping_mode(target)
-        @is_chat_ack[tag] = false
       end
+      @is_chat_ack[tag] = false
     }
   end
   def ping_mode(suspect_node)
@@ -332,7 +332,7 @@ class Server
         else
           puts "The node is dead"
           puts "Node Id = #{route[:node_id]} and #{@routing_table}"
-          _ = @routing_table.delete(route[:node_id])
+          @routing_table.delete(get_nearest_node(suspect_node))
           puts "Node Id = #{route[:node_id]} and #{@routing_table}"
         end
       end
