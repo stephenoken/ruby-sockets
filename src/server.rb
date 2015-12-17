@@ -85,14 +85,7 @@ class Server
         when "JOINING_NETWORK"
           send_routing_table(parsed_data)
         when "ROUTING_INFO"
-          parsed_data["route_table"].each  do |route|
-            puts "Route #{route}"
-            @routing_table[route["node_id"]] = {
-              :node_id => route["node_id"],
-              :ip_address => route["ip_address"]
-            }
-          end
-          puts "Routing table  #{@routing_table}"
+
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
           puts "Routing table  #{@routing_table}"
@@ -115,6 +108,21 @@ class Server
     end
   end
 
+  def process_routing_info(parsed_data)
+    puts "Parsed routing tabel --> #{parsed_data}"
+    if parsed_data["node_id"] == @guid
+      parsed_data["route_table"].each  do |route|
+        puts "Route #{route}"
+        @routing_table[route["node_id"]] = {
+          :node_id => route["node_id"],
+          :ip_address => route["ip_address"]
+        }
+      end
+      puts "Routing table  #{@routing_table}"
+    else
+      udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data["node_id"])][:ip_address])
+    end
+  end
   def process_message(parsed_data,key)
     if get_nearest_node(parsed_data[key]) == @guid
       puts "It has arrived at the destination"
@@ -150,7 +158,7 @@ class Server
     routing_table = {
       :type => "ROUTING_INFO",
       :gateway_id => parsed_data["gateway_id"],
-      :node_id => @guid,
+      :node_id => parsed_data["node_id"],
       :ip_address => @ip,
       :route_table =>  @routing_table.values
     }
