@@ -7,7 +7,10 @@
 5. You can pass a port number as an argument for both scripts
 
 ## CS705
-For both Lab 2 and Lab 3, be sure to pull the master branch
+For both Lab 2 and Lab 3, be sure to use the master branch
 
 ## Personal Project 
-Pull peer-2-peer branch
+To run the peer-2-peer programme: 
+
+1. Checkout the `peer-2-peer` branch.
+2. Run the following command `ruby src/server.rb [loacal machine's ip address] [options]`. To view the options run `ruby src/server.rb --help` 
