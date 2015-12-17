@@ -325,12 +325,13 @@ class Server
         data = Messanger.generate_message("PING",route,@guid)
         puts "Ping information #{data}"
         udp_send(data, route[:ip_address])
-        sleep 30
+        sleep 5
         if @are_pings_ack[suspect_node]
           puts "The node is alive"
           @are_pings_ack[suspect_node] = false
         else
           puts "The node is dead"
+          puts "Node Id = #{route[:node_id]} and #{@routing_table}"
           @routing_table.delete(route[:node_id])
         end
       end
