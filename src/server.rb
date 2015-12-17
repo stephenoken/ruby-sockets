@@ -79,8 +79,9 @@ class Server
         case parsed_data["type"]
         when "JOINING_NETWORK_RELAY"
           puts "In notify_network"
-          notify_network(parsed_data)
-          send_routing_table(parsed_data)
+          # notify_network(parsed_data)
+          # send_routing_table(parsed_data)
+          process_message(parsed_data,"node_id")
         when "JOINING_NETWORK"
           send_routing_table(parsed_data)
         when "ROUTING_INFO"
@@ -118,6 +119,8 @@ class Server
     if get_nearest_node(parsed_data[key]) == @guid
       puts "It has arrived at the destination"
       case parsed_data["type"]
+      when "JOINING_NETWORK_RELAY"
+        process_join_network_relay(parsed_data)
       when "CHAT"
         process_chat(parsed_data)
       when "ACK_CHAT"
@@ -136,6 +139,21 @@ class Server
     else
       hop_message(parsed_data,key)
     end
+  end
+
+  def process_join_network_relay(parsed_data)
+    # @routing_table[parsed_data["node_id"]] = {
+    #   :node_id => parsed_data["node_id"],
+    #   :ip_address => parsed_data["ip_address"]
+    # }
+    puts "In process_join_network_relay"
+    routing_table = {
+      :gateway_id => parsed_data["gateway_id"],
+      :node_id => @guid,
+      :ip_address => @ip,
+      :route_table =>  @routing_table.values
+    }
+    puts "#{routing_table}"
   end
 
   def process_ack_message(parsed_data)
@@ -203,6 +221,7 @@ class Server
     end
     udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data[key])][:ip_address])
   end
+
   def send_routing_table(parsed_data)
     notify_network(parsed_data)
     @routing_table[parsed_data["node_id"]] = {
