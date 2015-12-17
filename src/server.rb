@@ -148,6 +148,7 @@ class Server
     # }
     puts "In process_join_network_relay"
     routing_table = {
+      :type => "ROUTING_INFO",
       :gateway_id => parsed_data["gateway_id"],
       :node_id => @guid,
       :ip_address => @ip,
