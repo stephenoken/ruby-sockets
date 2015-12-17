@@ -106,12 +106,6 @@ class Server
         when "PING"
           puts "In recieve_message #{data}"
           process_message(parsed_data,"target_id")
-          # message = Messanger.generate_message("ACK",{
-          #     :node_id => parsed_data["target_id"],
-          #     :ip_address => @ip
-          # },@guid)
-          # puts "ACK response: #{message}"
-          # udp_send(message,parsed_data["ip_address"])
         when "ACK"
           process_message(parsed_data,"node_id")
           @are_pings_ack[parsed_data["node_id"]] = true
@@ -169,11 +163,11 @@ class Server
 
   def process_chat_retrieve(parsed_data)
     puts "Parsed --> #{parsed_data}"
-    puts "Messages --> #{@hashtags[CustomHash.hash(parsed_data["tag"])]}"
+    puts "Messages --> #{@hashtags[parsed_data["tag"]]}"
     hash_chat_resp = {
       :node_id => parsed_data["sender_id"],
       :tag => parsed_data["tag"],
-      :response => @hashtags[CustomHash.hash(parsed_data["tag"])][:response]
+      :response => @hashtags[parsed_data["tag"]][:response]
     }
     chat_resp = Messanger.generate_message("CHAT_RESPONSE",hash_chat_resp,@guid)
     puts "Chat response #{chat_resp}"
@@ -181,15 +175,15 @@ class Server
   end
 
   def process_chat(parsed_data)
-    if @hashtags[CustomHash.hash(parsed_data["tag"])].empty?
-      @hashtags[CustomHash.hash(parsed_data["tag"])] = {
+    puts "In process_chat #{parsed_data}"
+    puts "In process_chat #{@hashtags[parsed_data["tag"]]}"
+    if @hashtags[parsed_data["tag"]][:tag] == nil
+      @hashtags[parsed_data["tag"]] = {
         :tag => parsed_data["tag"],
-        :response => @hashtags[CustomHash.hash(parsed_data["tag"])][:response].push({:text => parsed_data["text"]})
+        :response => [{:text => parsed_data["text"]}]
       }
     else
-      @hashtags[CustomHash.hash(parsed_data["tag"])].merge!({
-        :response => @hashtags[CustomHash.hash(parsed_data["tag"])][:response].push({:text => parsed_data["text"]})
-      })
+      @hashtags[parsed_data["tag"]][:response] = @hashtags[parsed_data["tag"]][:response].push({:text => parsed_data["text"]})
     end
     ack_msg = {
     :node_id => parsed_data["sender_id"],
