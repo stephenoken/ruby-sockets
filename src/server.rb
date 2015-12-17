@@ -155,7 +155,7 @@ class Server
       :route_table =>  @routing_table.values
     }
     udp_send(JSON.generate(routing_table),@routing_table[get_nearest_node(routing_table[:gateway_id])][:ip_address])
-    if get_nearest_node(parsed_data["node_id"]) == @guid
+    if get_nearest_node(parsed_data["node_id"]) != @guid
       udp_send(JSON.generate(parsed_data),@routing_table[get_nearest_node(parsed_data["node_id"])][:ip_address])
     end
     puts "#{routing_table}"
