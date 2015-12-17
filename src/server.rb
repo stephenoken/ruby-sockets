@@ -85,7 +85,7 @@ class Server
         when "JOINING_NETWORK"
           send_routing_table(parsed_data)
         when "ROUTING_INFO"
-
+          process_routing_info(parsed_data)
 				when "LEAVE_NETWORK"
 					puts @routing_table.delete(parsed_data["node_id"])
           puts "Routing table  #{@routing_table}"
@@ -109,7 +109,7 @@ class Server
   end
 
   def process_routing_info(parsed_data)
-    puts "Parsed routing tabel --> #{parsed_data}"
+    puts "Parsed routing table --> #{parsed_data}"
     if parsed_data["node_id"] == @guid
       parsed_data["route_table"].each  do |route|
         puts "Route #{route}"
